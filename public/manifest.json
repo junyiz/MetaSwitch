@@ -1,0 +1,32 @@
+{
+    "name": "switch",
+    "description": "Auto Switch Proxy",
+    "version": "1.0",
+    "manifest_version": 3,
+    "background": {
+      "service_worker": "background.js"
+    },
+    "permissions": [
+      "proxy",
+      "storage"
+    ],
+    "host_permissions": [
+      "*://*/*"
+    ],
+    "action": {
+      "default_popup": "popup.html",
+      "default_icon": {
+        "16": "/images/X11.png",
+        "32": "/images/X11.png",
+        "48": "/images/X11.png",
+        "128": "/images/X11.png"
+      }
+    },
+    "icons": {
+      "16": "/images/X11.png",
+      "32": "/images/X11.png",
+      "48": "/images/X11.png",
+      "128": "/images/X11.png"
+    },
+    "options_page": "index.html"
+}
