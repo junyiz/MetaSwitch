@@ -210,6 +210,14 @@ export default function XProxy() {
     localStorage.setItem('modes', JSON.stringify(newModes))
   }
 
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') {
+      const modeName = localStorage.getItem('mode')
+      const newMode = modes.find((m) => m.name === modeName)
+      handleProxyChange(newMode)
+    }
+  })
+
   return (
     <div>
       <div className="mode">

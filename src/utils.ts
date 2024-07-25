@@ -1,4 +1,3 @@
-import { FindProxyForURL } from './consts'
 import { Mode } from './types'
 
 export const getStorage = async (key: string) => {
@@ -6,18 +5,13 @@ export const getStorage = async (key: string) => {
 }
 
 const reg = (exp: string[], ret: string) => {
-  const rule: string[] = []
-
-  exp.forEach(it => {
-    rule.push(`new RegExp('${it}').test(host)`)
-  })
-
-  return `if (${rule.join('||')}) return '${ret}';`
+  const array = `[${exp.map(it => `'${it}'`).join(',')}]`
+  const condition = `${array}.some(it => !!host.match(new RegExp(it)))`
+  return `if (${condition}) { return '${ret}'; }`
 }
 
 const getProxy = (name: string) =>  {
   const modes: Mode[] = JSON.parse(localStorage.getItem('modes') || '[]')
-  console.log(modes)
 
   for (const m of modes) {
     if (m.name === name && m.rules) {
@@ -50,5 +44,6 @@ export const json2pac = (json: Record<string, string[]>) => {
     }
   }
 
-  return FindProxyForURL.replace('"RULE";', str)
+  // https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Proxy_servers_and_tunneling/Proxy_Auto-Configuration_PAC_file
+  return `function FindProxyForURL(url, host) {${str} return "DIRECT";}`
 }
