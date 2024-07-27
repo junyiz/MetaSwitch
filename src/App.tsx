@@ -6,7 +6,7 @@ import { debounce } from 'lodash'
 import { Button, Form, Input, InputNumber, Modal, Radio, Select, Space, Tag, message } from 'antd'
 import { PlusOutlined } from '@ant-design/icons'
 import Editor, { loader, useMonaco } from '@monaco-editor/react'
-import { DEFAULT_RULE, FindProxyForURL } from './consts'
+import { DEFAULT_RULE } from './consts'
 import { Mode, ModeType } from './types'
 import { json2pac } from './utils'
 
@@ -19,7 +19,7 @@ loader.config({ paths: { vs: '/lib/monaco-editor/vs' } })
 
 const initialModes: Mode[] = [{ name: 'direct', type: 0 }, { name: 'system', type: 1 }]
 
-export default function XProxy() {
+export default function App() {
   const [modalForm] = Form.useForm()
   const [proxyForm] = Form.useForm()
   const monaco = useMonaco()
@@ -151,7 +151,7 @@ export default function XProxy() {
       chrome.runtime.sendMessage({
         mode: 'pac_script',
         pacScript: {
-          data: value.pacScript?.data || FindProxyForURL,
+          data: value.pacScript?.data || 'function FindProxyForURL(url, host) {return "DIRECT";}',
           mandatory: value.pacScript?.mandatory
         }
       }, () => {
@@ -210,13 +210,15 @@ export default function XProxy() {
     localStorage.setItem('modes', JSON.stringify(newModes))
   }
 
-  document.addEventListener('visibilitychange', () => {
-    if (document.visibilityState === 'visible') {
-      const modeName = localStorage.getItem('mode')
-      const newMode = modes.find((m) => m.name === modeName)
-      handleProxyChange(newMode)
-    }
-  })
+  useEffect(() => {
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') {
+        const modeName = localStorage.getItem('mode')
+        const newMode = modes.find((m) => m.name === modeName)
+        handleProxyChange(newMode)
+      }
+    })
+  }, [])
 
   return (
     <div>
