@@ -1,6 +1,6 @@
 {
-    "name": "Switch",
-    "description": "Auto Switch Proxy",
+    "name": "MetaSwitch",
+    "description": "快捷地管理和切换多个代理设置",
     "version": "1.0",
     "manifest_version": 3,
     "background": {
@@ -16,17 +16,17 @@
     "action": {
       "default_popup": "popup.html",
       "default_icon": {
-        "16": "/images/X11.png",
-        "32": "/images/X11.png",
-        "48": "/images/X11.png",
-        "128": "/images/X11.png"
+        "16": "/images/icon16.png",
+        "32": "/images/icon32.png",
+        "48": "/images/icon48.png",
+        "128": "/images/icon48.png"
       }
     },
     "icons": {
-      "16": "/images/X11.png",
-      "32": "/images/X11.png",
-      "48": "/images/X11.png",
-      "128": "/images/X11.png"
+      "16": "/images/icon16.png",
+      "32": "/images/icon32.png",
+      "48": "/images/icon48.png",
+      "128": "/images/icon48.png"
     },
     "options_page": "index.html"
 }

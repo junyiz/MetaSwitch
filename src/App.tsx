@@ -1,28 +1,17 @@
 // https://developer.chrome.com/docs/extensions/reference/api/proxy
 
 import { useEffect, useState } from 'react'
-import { parse } from 'jsonc-parser'
-import { debounce } from 'lodash'
-import { Button, Form, Input, InputNumber, Modal, Radio, Select, Space, Tag, message } from 'antd'
-import { PlusOutlined } from '@ant-design/icons'
-import Editor, { loader, useMonaco } from '@monaco-editor/react'
-import { DEFAULT_RULE } from './consts'
-import { Mode, ModeType } from './types'
-import { json2pac } from './utils'
+import { DeleteOutlined, EditOutlined, PlusOutlined } from '@ant-design/icons'
+import { Mode } from './types'
 
-import './App.css'
+import ModeEditor from './components/ModeEditor'
+import MonacoEditor from './components/MonacoEditor'
+import AddModeModal from './components/AddModeModal'
+import './App.less'
 
-// Manifest V3 不允许使用那些允许远程执行代码的应用
-// 详见 https://developer.chrome.com/docs/extensions/develop/migrate/improve-security?hl=zh-cn
-// min 文件从 npm 包中提取，版本是 monaco-editor@0.43.0
-loader.config({ paths: { vs: '/lib/monaco-editor/vs' } })
+const initialModes: Mode[] = [{ name: 'direct', type: 0, 'desc': '直接连接' }, { name: 'system', type: 1, desc: '系统代理' }]
 
-const initialModes: Mode[] = [{ name: 'direct', type: 0 }, { name: 'system', type: 1 }]
-
-export default function App() {
-  const [modalForm] = Form.useForm()
-  const [proxyForm] = Form.useForm()
-  const monaco = useMonaco()
+export default function XProxy() {
   const [currMode, setCurrMode] = useState<string>() 
   const [modes, setModes] = useState<Mode[]>(() => {
     if (localStorage.getItem('modes')) {
@@ -32,7 +21,6 @@ export default function App() {
   })
   const [modalOpen, setModalOpen] = useState(false)
   const [editMode, setEditMode] = useState<Mode>()
-  const [switchRule, setSwitchRule] = useState<string>()
 
   useEffect(() => {
     if (localStorage.getItem('mode')) {
@@ -55,99 +43,49 @@ export default function App() {
     }
   }, [modes])
 
-  useEffect(() => {
-    if (editMode?.type === 2 && editMode?.rules?.singleProxy) {
-      proxyForm.setFieldValue('singleProxy', editMode.rules.singleProxy)
-    }
-  }, [editMode, proxyForm])
+  // function updateProxy() {
+  //   const modeName = localStorage.getItem('mode')
+  //   const newMode = modes.find((m) => m.name === modeName)
+  //   handleProxyChange(newMode)
+  // }
 
-  useEffect(() => {
-    // https://microsoft.github.io/monaco-editor/typedoc/modules/languages.json.html
-    monaco?.languages.json.jsonDefaults.setDiagnosticsOptions({
-      validate: true,
-      allowComments: true,
-      schemas: [],
-      trailingCommas: 'ignore',
-    })
-  }, [monaco])
+  // useEffect(() => {
+  //   document.addEventListener('visibilitychange', () => {
+  //     if (document.visibilityState === 'visible') {
+  //       updateProxy()
+  //     }
+  //   })
+  // }, [])
 
-  function handleEditorDidMount() {
-    const elem = document.querySelector('.editor')?.parentElement
-    if (elem) {
-      const ro = new ResizeObserver(entries => {
-        for (const entry of entries) {
-          const { clientWidth, clientHeight } = entry.target
-          if (clientHeight > 0 && clientWidth > 0) {
-            localStorage.setItem('width', clientWidth + 'px')
-            localStorage.setItem('height', clientHeight + 'px')
-          }
-        }
-      })
-      ro.observe(elem)
-    }
-  }
-
-
-  function handleEditMode(m: Mode) {
+  function handleEditMode(e: React.MouseEvent<HTMLSpanElement>, m: Mode) {
+    e.stopPropagation()
     setEditMode(m)
     localStorage.setItem('editMode', m.name)
   }
 
-  function handleClose(mode: string) {
+  function handleDelete(mode: string) {
     const newModes: Mode[] = modes.filter((m) => m.name !== mode)
     setModes(newModes)
     localStorage.setItem('modes', JSON.stringify(newModes))
   }
 
-  function handleSubmit(values: { name: string; type: string; }) {
-    console.log('Received values of form: ', values)
-    if (modes.find((m) => m.name === values.name)) {
-      message.error(`named ${values.name} already exists`)
-      return
-    }
-    if (values.type === '2') {
-      const newModes: Mode[] = [...modes, {
-        name: values.name,
-        type: Number(values.type) as ModeType,
-        rules: {
-          singleProxy: {
-            scheme: 'SOCKS5',
-            host: '127.0.0.1',
-            port: 13659,
-          },
-          bypassList: [],
-        }
-      }]
-      setModes(newModes)
-      localStorage.setItem('editMode', values.name)
-      localStorage.setItem('modes', JSON.stringify(newModes))
-    }
-    if (values.type === '3') {
-      const newModes: Mode[] = [...modes, { name: values.name, type: Number(values.type) as ModeType, pacScript: { data: '', mandatory: true } }]
-      setModes(newModes)
-      localStorage.setItem('editMode', values.name)
-      localStorage.setItem('modes', JSON.stringify(newModes))
-    }
-    setModalOpen(false)
-  }
-
   function handleProxyChange(value?: Mode) {
-    console.log('value', value)
     if (!value) return
 
     if (value.type === 2) {
+      // 使用固定的代理服务器
       chrome.runtime.sendMessage({
         mode: 'fixed_servers',
         rules: value.rules
       }, () => {
         localStorage.setItem('mode', value.name)
         setCurrMode(value.name)
-        console.log('success')
       })
       return
     }
 
     if (value.type === 3) {
+      // 使用 PAC 脚本自动切换代理服务器
       chrome.runtime.sendMessage({
         mode: 'pac_script',
         pacScript: {
@@ -155,172 +93,59 @@ export default function App() {
           mandatory: value.pacScript?.mandatory
         }
       }, () => {
-        console.log('success')
         setCurrMode(value.name)
         localStorage.setItem('mode', value.name)
       })
       return
     }
 
+    // 直连或系统代理
     chrome.runtime.sendMessage({
       mode: value.name,
     }, () => {
       localStorage.setItem('mode', value.name)
       setCurrMode(value.name)
-      console.log('success')
     })
   }
 
-  function handlePacChange(v?: string) {
-    if (currMode === editMode?.name) {
-      handlePacScript(v)
-      handleProxyChange(JSON.parse(localStorage.getItem('modes') as string).find((m: Mode) => m.name === editMode?.name))
+  function handleModeChange(newModes: Mode[]) {
+    setModes(newModes)
+    if (editMode?.name === currMode) {
+      handleProxyChange(newModes.find((m: Mode) => m.name === editMode?.name))
     }
-    setSwitchRule(v)
-  }
-
-  function handleProxyRule(values: { singleProxy: { scheme: string; host: string; port: number } }) {
-    const newModes = modes.map((mode) => {
-      if (mode.name === editMode?.name) {
-        mode.rules = values
-      }
-      return mode
-    })
-    setModes(newModes)
     localStorage.setItem('modes', JSON.stringify(newModes))
   }
-
-  function handlePacScript(v?: string) {
-    const s = v || switchRule
-    if (!s) return
-    console.log('-)', s)
-    const json = parse(s)
-    const pac = json2pac(json)
-    const newModes = modes.map((mode) => {
-      if (mode.name === editMode?.name) {
-        mode.pacScript = {
-          data: pac,
-          mandatory: true
-        }
-      }
-      return mode
-    })
-    setModes(newModes)
-    localStorage.setItem('json', s)
-    localStorage.setItem('modes', JSON.stringify(newModes))
-  }
-
-  useEffect(() => {
-    document.addEventListener('visibilitychange', () => {
-      if (document.visibilityState === 'visible') {
-        const modeName = localStorage.getItem('mode')
-        const newMode = modes.find((m) => m.name === modeName)
-        handleProxyChange(newMode)
-      }
-    })
-  }, [])
 
   return (
-    <div>
+    <>
       <div className="mode">
-        {'Proxy Mode: '}
         {modes.map((mode) => (
-          <Tag.CheckableTag checked={mode.name === currMode} onClick={() => handleProxyChange(mode)}>{mode.name}</Tag.CheckableTag>
+          <div onClick={() => handleProxyChange(mode)} className={`mode-item${mode.name === currMode ? ' mode-item-active' : ''}${editMode?.name === mode.name ? ' mode-item-edit' : ''}`}>
+            <div className="mode-item-name">
+              {mode.name}
+            </div>
+            <div className="mode-item-desc">
+              {mode.desc}
+            </div>
+            {mode.type > 1 && <div className="mode-item-action">
+              <div>
+                <EditOutlined style={{fontSize: '14px' }} onClick={(event) => handleEditMode(event, mode)} />
+              </div>
+              <div>
+                <DeleteOutlined style={{fontSize: '14px' }} onClick={() => handleDelete(mode.name)} />
+              </div>
+            </div>}
+          </div>
         ))}
+        <div className="mode-item mode-item-new" onClick={() => setModalOpen(true)}><PlusOutlined /></div>
       </div>
-      <div className="profiles">
-        {'Proxy Profiles: '}
-        {modes.filter((m) => m.type > 1).map((mode) => (
-          <Tag.CheckableTag checked={mode.name === editMode?.name} onClick={() => handleEditMode(mode)}>{mode.name}</Tag.CheckableTag>
-        ))}
-        <Tag className="new" icon={<PlusOutlined />} onClick={() => setModalOpen(true)}>New profile</Tag>
+      <div className="edit-mode">
+        <EditOutlined style={{fontSize: '14px', marginRight: 10 }} />
+        {editMode?.name}
       </div>
-
-      <Modal title="New Profile" open={modalOpen} onOk={() => modalForm.submit()} onCancel={() => setModalOpen(false)}>
-        <Form
-          form={modalForm}
-          layout="vertical"
-          autoComplete="off"
-          onFinish={handleSubmit}
-        >
-          <Form.Item name="name" label="Profile Name" required rules={[{ required: true, message: 'missing profile name' }]}>
-            <Input />
-          </Form.Item>
-          <Form.Item name="type" label="Profile Type" required rules={[{ required: true, message: 'missing profile type' }]}>
-            <Radio.Group>
-              <Space direction="vertical">
-                <Radio value="2">Proxy Profile</Radio>
-                <Radio value="3">Switch Profile</Radio>
-              </Space>
-            </Radio.Group>
-          </Form.Item>
-        </Form>
-      </Modal>
-
-      {editMode?.type === 2 && (
-        <Form
-          className="form"
-          form={proxyForm}
-          onFinish={handleProxyRule}
-          autoComplete="off"
-          initialValues={editMode.rules}
-        >
-          <Space style={{ display: 'flex', marginBottom: 8 }} align="baseline">
-            <Form.Item
-              name={['singleProxy', 'scheme']}
-              rules={[{ required: true, message: 'missing protocol' }]}
-            >
-              <Select options={[{ value: 'http', label: 'HTTP' }, { value: 'https', label: 'HTTPS' }, { value: 'socks5', label: 'SOCKS5' }]} style={{ width: 120 }} />
-            </Form.Item>
-            <Form.Item
-              name={['singleProxy', 'host']}
-              rules={[{ required: true, message: 'missing host' }]}
-            >
-              <Input placeholder="host" />
-            </Form.Item>
-            <Form.Item
-              name={['singleProxy', 'port']}
-              rules={[{ required: true, message: 'missing port' }]}
-            >
-              <InputNumber placeholder="port" style={{ width: 120 }} />
-            </Form.Item>
-            <Form.Item>
-              <Space>
-                <Button type="primary" htmlType="submit">Submit</Button>
-                <Button onClick={() => handleClose(editMode?.name)}>Delete</Button>
-              </Space>
-            </Form.Item>
-          </Space>
-        </Form>
-      )}
-
-      {editMode?.type === 3 && (<>
-        <Editor
-          className="editor"
-          language="json"
-          options={{ minimap: { enabled: false } }}
-          defaultValue={localStorage.getItem('json') || JSON.stringify(DEFAULT_RULE, null, 2)}
-          onChange={debounce(handlePacChange, 300)}
-          onMount={handleEditorDidMount}
-          wrapperProps={{
-            style: {
-              display: 'flex',
-              position: 'relative',
-              textAlign: 'initial',
-              width: localStorage.getItem('width') || '100%',
-              height: localStorage.getItem('height') || '50vh',
-              border: '1px solid #e2e2e2',
-              marginBottom: '10px',
-              resize: 'both',
-              overflow: 'scroll',
-            }
-          }}
-        />
-        <Space>
-          <Button type="primary" onClick={() => handlePacScript()}>Submit</Button>
-          <Button onClick={() => handleClose(editMode?.name)}>Delete</Button>
-        </Space>
-      </>)}
-    </div>
+      {editMode?.type === 2 && <ModeEditor modes={modes} editMode={editMode} onChange={handleModeChange} />}
+      {editMode?.type === 3 && <MonacoEditor modes={modes} editMode={editMode} onChange={handleModeChange} />}
+      <AddModeModal modalOpen={modalOpen} modes={modes} setModalOpen={setModalOpen} onChange={handleModeChange} />
+    </>
   )
 }

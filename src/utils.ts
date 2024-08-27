@@ -15,7 +15,7 @@ const getProxy = (name: string) =>  {
 
   for (const m of modes) {
     if (m.name === name && m.rules) {
-      const { scheme, host, port } = m.rules.singleProxy
+      const { scheme, host, port } = m.rules.fallbackProxy
       return `${scheme === 'socks5' ? 'SOCKS5' : 'PROXY'} ${host}:${port}`
     }
   }

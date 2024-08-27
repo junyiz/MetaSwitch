@@ -1,0 +1,72 @@
+.mode {
+  display: flex;
+  flex-wrap: wrap;
+
+  &-item {
+    cursor: pointer;
+    width: 120px;
+    height: 78px;
+    border-radius: 5px;
+    margin-right: 20px;
+    margin-bottom: 10px;
+    border: 0.5px solid #efefef;
+    position: relative;
+    box-shadow: 0 2px 1px #00000008, 0 2px 1px #00000008;
+
+    &-name {
+      font-size: 20px;
+      padding: 2px 8px 0;
+      text-transform: uppercase;
+    }
+
+    &-desc {
+      color: #999;
+      padding: 0 8px;
+      font-size: 14px;
+    }
+
+    &-active {
+      color: #1677ff;
+      font-weight: bold;
+      border-color: #1677ff;
+    }
+
+    &-new {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      border-style: dashed;
+    }
+
+    &-action {
+      border-top: 0.5px solid #efefef;
+      display: flex;
+      opacity: 0;
+      > div {
+        flex: 1;
+        text-align: center;
+        &:first-child {
+          border-right: 0.5px solid #efefef;
+        }
+      }
+    }
+
+    &-edit &-edit-icon,
+    &:hover &-edit-icon {
+      display: block;
+    }
+
+    &:hover &-action {
+      opacity: 1;
+    }
+  }
+
+
+}
+
+
+.edit-mode {
+  font-size: 18px;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
