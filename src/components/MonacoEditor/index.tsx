@@ -9,7 +9,7 @@ import { Mode } from '@/types'
 // Manifest V3 不允许使用那些允许远程执行代码的应用
 // 详见 https://developer.chrome.com/docs/extensions/develop/migrate/improve-security?hl=zh-cn
 // min 文件从 npm 包中提取，版本是 monaco-editor@0.43.0
-loader.config({ paths: { vs: '/lib/monaco-editor/min/vs' } })
+loader.config({ paths: { vs: '/lib/monaco-editor/vs' } })
 
 export default function MonacoEditor({ modes, editMode, onChange }: {
   modes: Mode[]
