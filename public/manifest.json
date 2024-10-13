@@ -7,8 +7,7 @@
       "service_worker": "background.js"
     },
     "permissions": [
-      "proxy",
-      "storage"
+      "proxy"
     ],
     "host_permissions": [
       "*://*/*"

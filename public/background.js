@@ -2,9 +2,9 @@ chrome.runtime.onInstalled.addListener(() => {
     console.log('ProxySwitchy starting')
 })
 
-chrome.storage.onChanged.addListener((details) => {
-    // console.log(details)
-})
+// chrome.storage.onChanged.addListener((details) => {
+//     // console.log(details)
+// })
 
 chrome.proxy.onProxyError.addListener(function(e) {
     console.log('error', e)
