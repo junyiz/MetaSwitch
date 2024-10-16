@@ -72,7 +72,7 @@ export default function ModeEditor({ modes, editMode, onChange }: {
       </Form.Item>
       <Form.Item name="bypassList" label="不代理的地址列表" extra={
         <div style={{ color: '#999', fontSize: 12, marginTop: 8 }}>
-          不经过代理服务器的主机列表, 每行一个主机, 可使用通配符等匹配规则，详见<a href="https://developer.chrome.com/docs/extensions/reference/api/proxy?#proxy_rules" target="_blank"> Google 文档</a>
+          不经过代理服务器的主机列表, 每行一个主机, 可使用通配符等匹配规则，详见Google 文档 developer.chrome.com/docs/extensions/reference/api/proxy?#proxy_rules
         </div>
       }>
         <Input.TextArea rows={5} />
