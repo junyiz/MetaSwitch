@@ -15,6 +15,11 @@ export default defineConfig({
       input : {
         index: resolve(__dirname, 'index.html'),
         popup: resolve(__dirname, 'popup.html'),
+      },
+      output: {
+        entryFileNames: '[name].js',  // 入口文件名
+        chunkFileNames: '[name].js',   // chunk 文件名
+        assetFileNames: '[name].[ext]', // 资源文件名
       }
     }
   }
