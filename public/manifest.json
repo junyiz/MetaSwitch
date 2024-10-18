@@ -25,20 +25,13 @@
       "128": "/images/icon48.png"
     },
     "options_page": "index.html",
-    "web_accessible_resources": [ {
-      "matches": [ "\u003Call_urls>", "file:///*", "*://*/*" ],
-      "resources": [
-        "main.js",
-        "main.css",
-        "lib/monaco-editor/vs/loader.js",
-        "lib/monaco-editor/vs/editor/editor.main.js",
-        "lib/monaco-editor/vs/editor/editor.main.css",
-        "lib/monaco-editor/vs/editor/editor.main.nls.js",
-        "lib/monaco-editor/vs/language/json/jsonMode.js",
-        "lib/monaco-editor/vs/language/json/jsonWorker.js",
-        "lib/monaco-editor/vs/base/worker/workerMain.js",
-        "lib/monaco-editor/vs/base/common/worker/simpleWorker.nls.js",
-        "lib/monaco-editor/vs/base/browser/ui/codicons/codicon/codicon.ttf"
-      ]
-   } ]
+    "web_accessible_resources": [
+       {
+        "matches": [ "\u003Call_urls>", "file:///*", "*://*/*" ],
+        "resources": [
+          "assets/*",
+          "lib/monaco-editor/vs/*"
+        ]
+      }
+    ]
 }

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { DeleteOutlined, EditOutlined, PlusOutlined } from '@ant-design/icons'
+import { DEFAULT_RULE } from '@/consts'
 import { Mode } from './types'
 
 import ModeEditor from './components/ModeEditor'
@@ -144,7 +145,7 @@ export default function XProxy() {
         {editMode?.name}
       </div>
       {editMode?.type === 2 && <ModeEditor modes={modes} editMode={editMode} onChange={handleModeChange} />}
-      {editMode?.type === 3 && <MonacoEditor modes={modes} editMode={editMode} onChange={handleModeChange} />}
+      {editMode?.type === 3 && <MonacoEditor value={localStorage.getItem('json') || JSON.stringify(DEFAULT_RULE, null, 2)} modes={modes} editMode={editMode} onChange={handleModeChange} />}
       <AddModeModal modalOpen={modalOpen} modes={modes} setModalOpen={setModalOpen} onChange={handleModeChange} />
     </>
   )

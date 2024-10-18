@@ -17,9 +17,9 @@ export default defineConfig({
         popup: resolve(__dirname, 'popup.html'),
       },
       output: {
-        entryFileNames: '[name].js',  // 入口文件名
-        chunkFileNames: '[name].js',   // chunk 文件名
-        assetFileNames: '[name].[ext]', // 资源文件名
+        entryFileNames: 'assets/[name].js',  // 入口文件名
+        chunkFileNames: 'assets/[name].js',   // chunk 文件名
+        assetFileNames: 'assets/[name].[ext]', // 资源文件名
       }
     }
   }
