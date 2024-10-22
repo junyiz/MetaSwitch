@@ -1,3 +1,26 @@
+.head {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 20px;
+
+  .title {
+    color: #333;
+    font-size: 24px;
+    font-weight: 500;
+  }
+
+  .ellipsis {
+    color: #646cff;
+    font-weight: 500;
+    font-size: 16px;
+  }
+
+  .fullscreen {
+    font-size: 14px;
+    margin-left: 20px;
+  }
+}
+
 .mode {
   display: flex;
   flex-wrap: wrap;
@@ -13,6 +36,10 @@
     position: relative;
     box-shadow: 0 2px 1px #00000008, 0 2px 1px #00000008;
     color: rgba(0, 0, 0, 0.88);
+
+    &:last-child {
+      margin-right: 0;
+    }
 
     &-name {
       font-size: 20px;
@@ -60,10 +87,7 @@
       opacity: 1;
     }
   }
-
-
 }
-
 
 .edit-mode {
   font-size: 18px;

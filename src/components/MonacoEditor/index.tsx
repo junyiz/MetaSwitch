@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { debounce } from 'lodash'
 import { parse } from 'jsonc-parser'
 import { json2pac } from '@/utils'
@@ -13,6 +13,11 @@ export default function MonacoEditor({ value, modes, editMode, onChange }: {
   editMode: Mode
   onChange: (modes: Mode[]) => void
 }) {
+  const [rect, setRect] = useState<{ width: string, height: string }>( {
+    width: localStorage.getItem('width') || '100%',
+    height: localStorage.getItem('height') || '50vh'
+  })
+
   useEffect(() => {
     require(['vs/editor/editor.main'], () => {
       // 创建编辑器
@@ -58,6 +63,7 @@ export default function MonacoEditor({ value, modes, editMode, onChange }: {
           if (clientHeight > 0 && clientWidth > 0) {
             localStorage.setItem('width', clientWidth + 'px')
             localStorage.setItem('height', clientHeight + 'px')
+            setRect({ width: clientWidth + 'px', height: clientHeight + 'px' })
           }
         }
       })
@@ -72,9 +78,8 @@ export default function MonacoEditor({ value, modes, editMode, onChange }: {
         display: 'flex',
         position: 'relative',
         textAlign: 'initial',
-        width: localStorage.getItem('width') || '100%',
-        maxWidth: '100vh',
-        height: localStorage.getItem('height') || '50vh',
+        width: rect.width,
+        height: rect.height,
         border: '1px solid #e2e2e2',
         marginBottom: '10px',
         resize: 'both',
