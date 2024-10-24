@@ -80,6 +80,8 @@ export default function MonacoEditor({ value, modes, editMode, onChange }: {
         textAlign: 'initial',
         width: rect.width,
         height: rect.height,
+        minWidth: '670px',
+        minHeight: '300px',
         border: '1px solid #e2e2e2',
         marginBottom: '10px',
         resize: 'both',
