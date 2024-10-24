@@ -170,7 +170,7 @@ export default function XProxy() {
   return (
     <>
       <div className="head">
-        <div className="title">MetaSwitch</div>
+        <div className="title">Proxy MetaSwitch</div>
         <div className="action">
           {location.pathname.includes('/popup.html') && <a className="fullscreen" href="./index.html" target="_blank" title="Expand to full tab"><FullscreenOutlined /></a>}
           <Dropdown menu={{ items }} trigger={['click']}>
