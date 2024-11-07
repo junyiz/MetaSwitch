@@ -3,11 +3,11 @@ import type { MenuProps } from 'antd'
 import dayjs from 'dayjs'
 import { ExportOutlined, FullscreenOutlined, ImportOutlined, EllipsisOutlined } from '@ant-design/icons'
 
-import Proxies from './Proxies'
+import Proxies from './Proxies/index'
 import './App.less'
 
 
-export default function XProxy() {
+export default function App() {
   const onExport = () => {
     const a = document.createElement('a')
     const json = Object.keys(localStorage).reduce((pre: Record<string, string | null>, key) => {
