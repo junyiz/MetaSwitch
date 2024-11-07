@@ -3,7 +3,7 @@ import type { MenuProps } from 'antd'
 import dayjs from 'dayjs'
 import { ExportOutlined, FullscreenOutlined, ImportOutlined, EllipsisOutlined } from '@ant-design/icons'
 
-import Proxies from './Prox/index'
+import Proxies from './Proxies/index'
 import './App.less'
 
 
