@@ -1,6 +1,6 @@
 import { Form, Input, Modal, Radio, Space, message } from 'antd'
-import { Mode, ModeType } from '@/types'
-import { DEFAULT_FIXED_SERVER_RULES } from '@/consts'
+import { Mode, ModeType } from '../types'
+import { DEFAULT_FIXED_SERVER_RULES } from '../consts'
 
 export default function AddModeModal({ modes, modalOpen, setModalOpen, onChange }: {
   modes: Mode[]

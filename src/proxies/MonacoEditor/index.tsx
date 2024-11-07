@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react'
 import { debounce } from 'lodash'
 import { parse } from 'jsonc-parser'
-import { json2pac } from '@/utils'
-import { Mode } from '@/types'
+import { json2pac } from '../utils'
+import { Mode } from '../types'
 
 const require = (window as any).require
 require.config({ paths: { 'vs': 'lib/monaco-editor/vs' }})

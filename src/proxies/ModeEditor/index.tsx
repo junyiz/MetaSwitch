@@ -1,6 +1,6 @@
 import { useEffect, useCallback } from 'react'
 import { Form, Input, InputNumber, Select, Space } from 'antd'
-import { Mode, ModeRules } from '@/types'
+import { Mode, ModeRules } from '../types'
 import './styles.less'
 
 export default function ModeEditor({ modes, editMode, onChange }: {
