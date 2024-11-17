@@ -5,7 +5,6 @@
   &-item {
     cursor: pointer;
     width: 120px;
-    height: 78px;
     border-radius: 5px;
     margin-right: 20px;
     margin-bottom: 10px;
@@ -19,15 +18,20 @@
     }
 
     &-name {
-      font-size: 20px;
+      font-size: 18px;
       padding: 2px 8px 0;
       text-transform: uppercase;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      overflow: hidden;
     }
+
 
     &-desc {
       color: #999;
       padding: 0 8px;
       font-size: 14px;
+      margin-bottom: 5px;
     }
 
     &-active {
@@ -46,9 +50,12 @@
       border-top: 0.5px solid #efefef;
       display: flex;
       opacity: 0;
+
       > div {
         flex: 1;
         text-align: center;
+        padding-block: 4px 2px;
+
         &:first-child {
           border-right: 0.5px solid #efefef;
         }

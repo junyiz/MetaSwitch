@@ -7,11 +7,16 @@ import { DeleteOutlined, EditOutlined, PlusOutlined } from '@ant-design/icons'
 import MonacoEditor from './MonacoEditor'
 import AddModeModal from './AddModeModal'
 import ModeEditor from './ModeEditor'
-import { DEFAULT_RULE } from './consts'
+import { DEFAULT_RULE, DEFAULT_FIXED_SERVER_RULES } from './consts'
 import { Mode } from './types'
 import './styles.less'
 
-const initialModes: Mode[] = [{ name: 'direct', type: 0, 'desc': '直接连接' }, { name: 'system', type: 1, desc: '系统代理' }]
+const initialModes: Mode[] = [
+  { name: 'direct', type: 0, 'desc': '直接连接' },
+  { name: 'system', type: 1, desc: '系统代理' },
+  { name: 'fixed Proxy', type: 2, desc: '固定代理', rules: DEFAULT_FIXED_SERVER_RULES },
+  { name: 'Auto Switch', type: 3, desc: 'PAC 脚本' },
+]
 
 export default function Proxies() {
   const [currMode, setCurrMode] = useState<string>() 
@@ -28,6 +33,7 @@ export default function Proxies() {
     if (localStorage.getItem('mode')) {
       setCurrMode(localStorage.getItem('mode') || '')
     } else {
+      // 获取当前代理模式
       chrome.proxy.settings.get(
         {'incognito': false},
         function(config) {
@@ -109,7 +115,7 @@ export default function Proxies() {
       <div className="mode">
         {modes.map((mode) => (
           <div onClick={() => handleProxyChange(mode)} className={`mode-item${mode.name === currMode ? ' mode-item-active' : ''}${editMode?.name === mode.name ? ' mode-item-edit' : ''}`}>
-            <div className="mode-item-name">
+            <div className="mode-item-name" title={mode.name}>
               {mode.name}
             </div>
             <div className="mode-item-desc">

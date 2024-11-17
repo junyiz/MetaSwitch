@@ -31,6 +31,7 @@ a:hover {
 
 #root.popup {
   width: 690px;
+  min-height: 582px;
 
   .expand {
     display: inline;
