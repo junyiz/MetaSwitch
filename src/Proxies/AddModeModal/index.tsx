@@ -1,6 +1,8 @@
 import { Form, Input, Modal, Radio, Space, message } from 'antd'
+import { parse } from 'jsonc-parser'
+import { json2pac } from '../utils'
 import { Mode, ModeType } from '../types'
-import { DEFAULT_FIXED_SERVER_RULES } from '../consts'
+import { DEFAULT_FIXED_SERVER_RULES, DEFAULT_RULE } from '../consts'
 
 export default function AddModeModal({ modes, modalOpen, setModalOpen, onChange }: {
   modes: Mode[]
@@ -31,7 +33,10 @@ export default function AddModeModal({ modes, modalOpen, setModalOpen, onChange 
         name: values.name,
         desc: 'PAC 脚本',
         type: Number(values.type) as ModeType,
-        pacScript: { data: '', mandatory: true }
+        pacScript: {
+          data: json2pac(parse(DEFAULT_RULE)),
+          mandatory: true
+        }
       }]
       localStorage.setItem('editMode', values.name)
       onChange(newModes)

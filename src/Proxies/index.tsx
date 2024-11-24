@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from 'react'
 import { DeleteOutlined, EditOutlined, PlusOutlined } from '@ant-design/icons'
-
-
+import { parse } from 'jsonc-parser'
+import { json2pac } from './utils'
 import MonacoEditor from './MonacoEditor'
 import AddModeModal from './AddModeModal'
 import ModeEditor from './ModeEditor'
@@ -83,7 +83,7 @@ export default function Proxies() {
       chrome.runtime.sendMessage({
         mode: 'pac_script',
         pacScript: {
-          data: value.pacScript?.data || 'function FindProxyForURL(url, host) {return "DIRECT";}',
+          data: value.pacScript?.data || json2pac(parse(DEFAULT_RULE)),
           mandatory: value.pacScript?.mandatory
         }
       }, () => {
