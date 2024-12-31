@@ -45,7 +45,7 @@ export default function Proxies() {
     }
     if (modes.length > 0) {
       if (localStorage.getItem('editMode')) {
-        setEditMode(modes.find((m) => m.name === localStorage.getItem('editMode')))
+        setEditMode(modes.find((m) => m.name.toLowerCase() === localStorage.getItem('editMode')))
       } else {
         setEditMode(modes[2])
       }
@@ -54,18 +54,19 @@ export default function Proxies() {
 
   function handleEditMode(m: Mode) {
     setEditMode(m)
-    localStorage.setItem('editMode', m.name)
+    localStorage.setItem('editMode', m.name.toLowerCase())
   }
 
   function handleDelete(e: React.MouseEvent<HTMLAnchorElement>, mode: string) {
     e.stopPropagation()
-    const newModes: Mode[] = modes.filter((m) => m.name !== mode)
+    const newModes: Mode[] = modes.filter((m) => m.name.toLowerCase() !== mode.toLowerCase())
     setModes(newModes)
     localStorage.setItem('modes', JSON.stringify(newModes))
   }
 
   function handleRename(e: React.MouseEvent<HTMLAnchorElement>, mode: string) {
     e.stopPropagation()
+    console.log(mode)
   }
 
   function handleProxyChange(value?: Mode) {
@@ -77,8 +78,8 @@ export default function Proxies() {
         mode: 'fixed_servers',
         rules: value.rules
       }, () => {
-        localStorage.setItem('mode', value.name)
-        setCurrMode(value.name)
+        localStorage.setItem('mode', value.name.toLowerCase())
+        setCurrMode(value.name.toLowerCase())
       })
       return
     }
@@ -92,25 +93,25 @@ export default function Proxies() {
           mandatory: value.pacScript?.mandatory
         }
       }, () => {
-        setCurrMode(value.name)
-        localStorage.setItem('mode', value.name)
+        setCurrMode(value.name.toLowerCase())
+        localStorage.setItem('mode', value.name.toLowerCase())
       })
       return
     }
 
     // 直连或系统代理
     chrome.runtime.sendMessage({
-      mode: value.name,
+      mode: value.name.toLowerCase(),
     }, () => {
-      localStorage.setItem('mode', value.name)
-      setCurrMode(value.name)
+      localStorage.setItem('mode', value.name.toLowerCase())
+      setCurrMode(value.name.toLowerCase())
     })
   }
 
   function handleModeChange(newModes: Mode[]) {
     setModes(newModes)
-    if (editMode?.name === currMode) {
-      handleProxyChange(newModes.find((m: Mode) => m.name === editMode?.name))
+    if (editMode?.name.toLowerCase() === currMode?.toLowerCase()) {
+      handleProxyChange(newModes.find((m: Mode) => m.name.toLowerCase() === editMode?.name.toLowerCase()))
     }
     localStorage.setItem('modes', JSON.stringify(newModes))
   }
@@ -119,10 +120,10 @@ export default function Proxies() {
     <>
       <div className="mode">
         {modes.map((mode) => (
-          <div onClick={() => handleEditMode(mode)} className={`mode-item${mode.name === currMode ? ' mode-item-active' : ''}${editMode?.name === mode.name ? ' mode-item-edit' : ''}`}>
-            <div className="mode-item-name" title={mode.name}>
-              <span>{mode.name}</span>
-              <Switch size="small" checked={mode.name === currMode} onChange={() => handleProxyChange(mode)} />
+          <div onClick={() => handleEditMode(mode)} className={`mode-item${mode.name.toLowerCase() === currMode?.toLowerCase() ? ' mode-item-active' : ''}${editMode?.name.toLowerCase() === mode.name.toLowerCase() ? ' mode-item-edit' : ''}`}>
+            <div className="mode-item-name">
+              <span>{mode.name.toLowerCase()}</span>
+              <Switch size="small" checked={mode.name.toLowerCase() === currMode?.toLowerCase()} onChange={() => handleProxyChange(mode)} />
             </div>
             <div className="mode-item-desc">
               <span>{mode.desc}</span>

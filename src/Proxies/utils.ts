@@ -14,7 +14,8 @@ const getProxy = (name: string) =>  {
   const modes: Mode[] = JSON.parse(localStorage.getItem('modes') || '[]')
 
   for (const m of modes) {
-    if (m.name === name && m.rules) {
+    // name 不区分大小写
+    if (m.name.toLowerCase() === name.toLowerCase() && m.rules) {
       const { scheme, host, port } = m.rules.fallbackProxy
       return `${scheme === 'socks5' ? 'SOCKS5' : 'PROXY'} ${host}:${port}`
     }

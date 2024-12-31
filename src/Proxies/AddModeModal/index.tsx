@@ -14,23 +14,24 @@ export default function AddModeModal({ modes, modalOpen, setModalOpen, onChange 
 
   function handleSubmit(values: { name: string; type: string; }) {
     console.log('Received values of form: ', values)
-    if (modes.find((m) => m.name === values.name)) {
-      message.error(`named ${values.name} already exists`)
+    const name = values.name.trim().toLowerCase()
+    if (modes.find((m) => m.name.toLowerCase() === name)) {
+      message.error(`named ${name} already exists`)
       return
     }
     if (values.type === '2') {
       const newModes: Mode[] = [...modes, {
-        name: values.name,
+        name,
         desc: '固定代理',
         type: Number(values.type) as ModeType,
         rules: DEFAULT_FIXED_SERVER_RULES
       }]
-      localStorage.setItem('editMode', values.name)
+      localStorage.setItem('editMode', name)
       onChange(newModes)
     }
     if (values.type === '3') {
       const newModes: Mode[] = [...modes, {
-        name: values.name,
+        name,
         desc: 'PAC 脚本',
         type: Number(values.type) as ModeType,
         pacScript: {
@@ -38,7 +39,7 @@ export default function AddModeModal({ modes, modalOpen, setModalOpen, onChange 
           mandatory: true
         }
       }]
-      localStorage.setItem('editMode', values.name)
+      localStorage.setItem('editMode', name)
       onChange(newModes)
     }
     setModalOpen(false)

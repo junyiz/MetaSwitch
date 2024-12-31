@@ -46,7 +46,7 @@ export default function MonacoEditor({ value, modes, editMode, onChange }: {
         const json = parse(s)
         const pac = json2pac(json)
         const newModes = modes.map((mode) => {
-          if (mode.name === editMode?.name) {
+          if (mode.name.toLowerCase() === editMode?.name.toLowerCase()) {
             mode.pacScript = {
               data: pac,
               mandatory: true

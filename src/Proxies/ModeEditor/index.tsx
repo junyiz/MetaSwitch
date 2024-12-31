@@ -27,7 +27,7 @@ export default function ModeEditor({ modes, editMode, onChange }: {
   
   function onValuesChange(_changedValues: unknown, allValues: ModeRules) {
     const newModes = modes.map((mode) => {
-      if (mode.name === editMode?.name) {
+      if (mode.name.toLowerCase() === editMode?.name.toLowerCase()) {
         const { fallbackProxy, bypassList } = allValues
         mode.rules = {
           fallbackProxy,
