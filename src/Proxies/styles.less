@@ -20,10 +20,16 @@
     &-name {
       font-size: 18px;
       padding: 2px 8px 0;
-      text-transform: uppercase;
       white-space: nowrap;
       text-overflow: ellipsis;
       overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+
+      span {
+        margin-right: 5px;
+      }
     }
 
 
@@ -31,12 +37,15 @@
       color: #999;
       padding: 0 8px;
       font-size: 14px;
+      margin-top: 25px;
       margin-bottom: 5px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
     }
 
     &-active {
       color: #1677ff;
-      border-color: #1677ff;
     }
 
     &-new {
@@ -60,6 +69,10 @@
           border-right: 0.5px solid #efefef;
         }
       }
+    }
+
+    &-edit {
+      border-color: #1677ff;
     }
 
     &-edit &-edit-icon,

@@ -1,7 +1,8 @@
 // https://developer.chrome.com/docs/extensions/reference/api/proxy
 
 import { useEffect, useState } from 'react'
-import { DeleteOutlined, EditOutlined, PlusOutlined } from '@ant-design/icons'
+import { Dropdown, Switch } from 'antd'
+import { DeleteOutlined, EditOutlined, MoreOutlined, PlusOutlined } from '@ant-design/icons'
 import { parse } from 'jsonc-parser'
 import { json2pac } from './utils'
 import MonacoEditor from './MonacoEditor'
@@ -51,16 +52,20 @@ export default function Proxies() {
     }
   }, [modes])
 
-  function handleEditMode(e: React.MouseEvent<HTMLSpanElement>, m: Mode) {
-    e.stopPropagation()
+  function handleEditMode(m: Mode) {
     setEditMode(m)
     localStorage.setItem('editMode', m.name)
   }
 
-  function handleDelete(mode: string) {
+  function handleDelete(e: React.MouseEvent<HTMLAnchorElement>, mode: string) {
+    e.stopPropagation()
     const newModes: Mode[] = modes.filter((m) => m.name !== mode)
     setModes(newModes)
     localStorage.setItem('modes', JSON.stringify(newModes))
+  }
+
+  function handleRename(e: React.MouseEvent<HTMLAnchorElement>, mode: string) {
+    e.stopPropagation()
   }
 
   function handleProxyChange(value?: Mode) {
@@ -114,21 +119,32 @@ export default function Proxies() {
     <>
       <div className="mode">
         {modes.map((mode) => (
-          <div onClick={() => handleProxyChange(mode)} className={`mode-item${mode.name === currMode ? ' mode-item-active' : ''}${editMode?.name === mode.name ? ' mode-item-edit' : ''}`}>
+          <div onClick={() => handleEditMode(mode)} className={`mode-item${mode.name === currMode ? ' mode-item-active' : ''}${editMode?.name === mode.name ? ' mode-item-edit' : ''}`}>
             <div className="mode-item-name" title={mode.name}>
-              {mode.name}
+              <span>{mode.name}</span>
+              <Switch size="small" checked={mode.name === currMode} onChange={() => handleProxyChange(mode)} />
             </div>
             <div className="mode-item-desc">
-              {mode.desc}
+              <span>{mode.desc}</span>
+              {mode.type > 1 && (
+                <Dropdown
+                  menu={{ items: [
+                      {
+                        label: (<a onClick={(event) => handleRename(event, mode.name)}><EditOutlined style={{fontSize: '14px' }} /> rename</a>),
+                        key: '0',
+                      },
+                      {
+                        label: (<a onClick={(event) => handleDelete(event, mode.name)}><DeleteOutlined style={{fontSize: '14px' }} /> remove</a>),
+                        key: '1',
+                      },
+                    ]
+                  }}
+                  trigger={['click']}
+                >
+                  <MoreOutlined style={{ fontSize: '12px' }} />
+                </Dropdown>
+              )}
             </div>
-            {mode.type > 1 && <div className="mode-item-action">
-              <div>
-                <EditOutlined style={{fontSize: '14px' }} onClick={(event) => handleEditMode(event, mode)} />
-              </div>
-              <div>
-                <DeleteOutlined style={{fontSize: '14px' }} onClick={() => handleDelete(mode.name)} />
-              </div>
-            </div>}
           </div>
         ))}
         <div className="mode-item mode-item-new" onClick={() => setModalOpen(true)}><PlusOutlined /></div>

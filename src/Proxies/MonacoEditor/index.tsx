@@ -3,6 +3,7 @@ import { debounce } from 'lodash'
 import { parse } from 'jsonc-parser'
 import { json2pac } from '../utils'
 import { Mode } from '../types'
+import './styles.less'
 
 const require = (window as any).require
 require.config({ paths: { 'vs': 'lib/monaco-editor/vs' }})
@@ -72,20 +73,23 @@ export default function MonacoEditor({ value, modes, editMode, onChange }: {
   }, [])
 
   return (
-    <div
-      className="editor"
-      style={{
-        display: 'flex',
-        position: 'relative',
-        textAlign: 'initial',
-        width: rect.width,
-        height: rect.height,
-        minWidth: '670px',
-        minHeight: '300px',
-        border: '1px solid #e2e2e2',
-        marginBottom: '10px',
-        resize: 'both',
-        overflow: 'scroll',
-    }} />
+    <div className="pac-editor">
+      <div className="title">自动切换规则(<a href="https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Proxy_servers_and_tunneling/Proxy_Auto-Configuration_PAC_file" target="_blank">PAC 脚本</a>)</div>
+      <div
+        className="editor"
+        style={{
+          display: 'flex',
+          position: 'relative',
+          textAlign: 'initial',
+          width: rect.width,
+          height: rect.height,
+          minWidth: '670px',
+          minHeight: '300px',
+          border: '1px solid #e2e2e2',
+          marginBottom: '10px',
+          resize: 'both',
+          overflow: 'scroll',
+      }} />
+    </div>
   )
 }
