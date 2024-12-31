@@ -141,7 +141,7 @@ export default function Proxies() {
                   }}
                   trigger={['click']}
                 >
-                  <MoreOutlined style={{ fontSize: '12px' }} />
+                  <MoreOutlined style={{ fontSize: '14px' }} />
                 </Dropdown>
               )}
             </div>
