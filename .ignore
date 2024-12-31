@@ -1,0 +1,3 @@
+# rg (Ripgrep) to ignore the dist directory
+
+public/lib
