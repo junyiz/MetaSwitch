@@ -20,7 +20,7 @@ export default defineConfig({
         entryFileNames: 'assets/[name].js',  // 入口文件名
         chunkFileNames: 'assets/[name].js',   // chunk 文件名
         assetFileNames: 'assets/[name].[ext]', // 资源文件名
-      }
+      },
     }
-  }
+  },
 })
