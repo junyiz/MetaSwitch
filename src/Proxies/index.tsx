@@ -17,7 +17,7 @@ const initialModes: Mode[] = [
   { name: 'system', type: 1, desc: '系统代理' },
   { name: 'whistle', type: 2, desc: '固定代理', rules: DEFAULT_FIXED_SERVER_RULES },
   { name: 'fixedProxy', type: 2, desc: '固定代理', rules: DEFAULT_FIXED_SERVER_RULES },
-  { name: 'AutoSwitch', type: 3, desc: 'PAC 脚本' },
+  { name: 'autoSwitch', type: 3, desc: 'PAC 脚本' },
 ]
 
 export default function Proxies() {
@@ -123,7 +123,7 @@ export default function Proxies() {
         {modes.map((mode) => (
           <div onClick={() => handleEditMode(mode)} className={`mode-item${mode.name.toLowerCase() === currMode?.toLowerCase() ? ' mode-item-active' : ''}${editMode?.name.toLowerCase() === mode.name.toLowerCase() ? ' mode-item-edit' : ''}`}>
             <div className="mode-item-name">
-              <span>{mode.name.toLowerCase()}</span>
+              <span>{mode.name}</span>
               <Switch size="small" checked={mode.name.toLowerCase() === currMode?.toLowerCase()} onChange={() => handleProxyChange(mode)} />
             </div>
             <div className="mode-item-desc">
