@@ -39,12 +39,14 @@ export const json2pac = (json: Record<string, string[]>) => {
           if (proxy) {
             str += reg(json[key], proxy) + '\n'
           } else {
-            console.warn('not find custom proxy config')
+            console.warn('not find custom proxy config for', key)
           }
         }
     }
   }
 
   // https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Proxy_servers_and_tunneling/Proxy_Auto-Configuration_PAC_file
-  return `function FindProxyForURL(url, host) {${str} return "DIRECT";}`
+  const pacStr = `function FindProxyForURL(url, host) {${str} return "DIRECT";}`
+  console.log(pacStr)
+  return pacStr
 }

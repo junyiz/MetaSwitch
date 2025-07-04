@@ -15,8 +15,9 @@ import './styles.less'
 const initialModes: Mode[] = [
   { name: 'direct', type: 0, 'desc': '直接连接' },
   { name: 'system', type: 1, desc: '系统代理' },
-  { name: 'fixed Proxy', type: 2, desc: '固定代理', rules: DEFAULT_FIXED_SERVER_RULES },
-  { name: 'Auto Switch', type: 3, desc: 'PAC 脚本' },
+  { name: 'whistle', type: 2, desc: '固定代理', rules: DEFAULT_FIXED_SERVER_RULES },
+  { name: 'fixedProxy', type: 2, desc: '固定代理', rules: DEFAULT_FIXED_SERVER_RULES },
+  { name: 'AutoSwitch', type: 3, desc: 'PAC 脚本' },
 ]
 
 export default function Proxies() {
