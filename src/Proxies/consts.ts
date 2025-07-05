@@ -8,12 +8,12 @@ export const DEFAULT_RULE = `{
   // 使用系统代理，代理配置从操作系统中获取
   "system": [],
   
-  // 自定义代理，比如 whistle
+  // 自定义代理，比如本机开发常用的 whistle
   "whistle": [
     "local.dev"
   ],
   
-  // 自定义代理，比如 v2ray
+  // 自定义代理，比如科学上网常用的 v2ray
   "fixedProxy": [
     // "google.com"
   ],

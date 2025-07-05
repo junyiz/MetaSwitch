@@ -162,7 +162,7 @@ export default function Proxies() {
         {editMode?.name}
       </div>
       {editMode?.type === 2 && <ModeEditor modes={modes} editMode={editMode} onChange={handleModeChange} />}
-      {editMode?.type === 3 && <MonacoEditor value={localStorage.getItem('json') || DEFAULT_RULE} modes={modes} editMode={editMode} onChange={handleModeChange} />}
+      {editMode?.type === 3 && <MonacoEditor value={localStorage.getItem(`${editMode.name}:json`) || DEFAULT_RULE} modes={modes} editMode={editMode} onChange={handleModeChange} />}
       <AddModeModal modalOpen={modalOpen} modes={modes} setModalOpen={setModalOpen} onChange={handleModeChange} />
     </>
   )
