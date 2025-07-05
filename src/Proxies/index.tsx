@@ -87,11 +87,12 @@ export default function Proxies() {
 
     if (value.type === 3) {
       // 使用 PAC 脚本自动切换代理服务器
+      const json = localStorage.getItem(`${value.name}:json`) || localStorage.getItem('json') || DEFAULT_RULE
       chrome.runtime.sendMessage({
         mode: 'pac_script',
         pacScript: {
-          data: value.pacScript?.data || json2pac(parse(DEFAULT_RULE)),
-          mandatory: value.pacScript?.mandatory
+          data: json2pac(parse(json)),
+          mandatory: true
         }
       }, () => {
         setCurrMode(value.name.toLowerCase())
@@ -111,10 +112,15 @@ export default function Proxies() {
 
   function handleModeChange(newModes: Mode[]) {
     setModes(newModes)
-    if (editMode?.name.toLowerCase() === currMode?.toLowerCase()) {
-      handleProxyChange(newModes.find((m: Mode) => m.name.toLowerCase() === editMode?.name.toLowerCase()))
+    if (currMode) {
+      if (
+        editMode?.name.toLowerCase() === currMode.toLowerCase()
+        || newModes.find(it => it.name.toLowerCase() === currMode.toLowerCase())?.type === 3
+      ) {
+        localStorage.setItem('modes', JSON.stringify(newModes))
+        handleProxyChange(newModes.find((m: Mode) => m.name.toLowerCase() === currMode?.toLowerCase()))
+      }
     }
-    localStorage.setItem('modes', JSON.stringify(newModes))
   }
 
   return (

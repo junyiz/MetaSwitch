@@ -1,7 +1,5 @@
 import { useEffect, useState } from 'react'
 import { debounce } from 'lodash'
-import { parse } from 'jsonc-parser'
-import { json2pac } from '../utils'
 import { Mode } from '../types'
 import './styles.less'
 
@@ -41,21 +39,10 @@ export default function MonacoEditor({ value, modes, editMode, onChange }: {
 
       // 监测编辑器内容变化
       editor.onDidChangeModelContent(debounce(() => {
-        const s = editor.getValue()
-        if (!s) return
-        const json = parse(s)
-        const pac = json2pac(json)
-        const newModes = modes.map((mode) => {
-          if (mode.name.toLowerCase() === editMode?.name.toLowerCase()) {
-            mode.pacScript = {
-              data: pac,
-              mandatory: true
-            }
-          }
-          return mode
-        })
-        localStorage.setItem('json', s)
-        onChange(newModes)
+        const json = editor.getValue()
+        if (!json) return
+        localStorage.setItem(`${editMode.name}:json`, json)
+        onChange(modes)
       }, 300))
 
       const ro = new ResizeObserver(entries => {
