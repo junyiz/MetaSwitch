@@ -87,7 +87,7 @@ export default function Proxies() {
 
     if (value.type === 3) {
       // 使用 PAC 脚本自动切换代理服务器
-      const json = localStorage.getItem(`${value.name}:json`) || localStorage.getItem('json') || DEFAULT_RULE
+      const json = localStorage.getItem(`${value.name.toLowerCase()}:json`) || localStorage.getItem('json') || DEFAULT_RULE
       chrome.runtime.sendMessage({
         mode: 'pac_script',
         pacScript: {
@@ -162,7 +162,7 @@ export default function Proxies() {
         {editMode?.name}
       </div>
       {editMode?.type === 2 && <ModeEditor modes={modes} editMode={editMode} onChange={handleModeChange} />}
-      {editMode?.type === 3 && <MonacoEditor value={localStorage.getItem(`${editMode.name}:json`) || DEFAULT_RULE} modes={modes} editMode={editMode} onChange={handleModeChange} />}
+      {editMode?.type === 3 && <MonacoEditor value={localStorage.getItem(`${editMode.name.toLowerCase()}:json`) || DEFAULT_RULE} modes={modes} editMode={editMode} onChange={handleModeChange} />}
       <AddModeModal modalOpen={modalOpen} modes={modes} setModalOpen={setModalOpen} onChange={handleModeChange} />
     </>
   )

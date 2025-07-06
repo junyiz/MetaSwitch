@@ -41,7 +41,7 @@ export default function MonacoEditor({ value, modes, editMode, onChange }: {
       editor.onDidChangeModelContent(debounce(() => {
         const json = editor.getValue()
         if (!json) return
-        localStorage.setItem(`${editMode.name}:json`, json)
+        localStorage.setItem(`${editMode.name.toLowerCase()}:json`, json)
         onChange(modes)
       }, 300))
 
@@ -52,6 +52,7 @@ export default function MonacoEditor({ value, modes, editMode, onChange }: {
             localStorage.setItem('width', clientWidth + 'px')
             localStorage.setItem('height', clientHeight + 'px')
             setRect({ width: clientWidth + 'px', height: clientHeight + 'px' })
+            editor.layout()
           }
         }
       })
