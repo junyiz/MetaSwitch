@@ -7,7 +7,10 @@ export const getStorage = async (key: string) => {
 const reg = (exp: string[], ret: string) => {
   const array = `[${exp.map(it => `'${it}'`).join(',')}]`
   const condition = `${array}.some(it => !!host.match(new RegExp(it)))`
-  return `if (${condition}) { return '${ret}'; }`
+  return `
+if(${condition}){
+    return '${ret}';
+  }`
 }
 
 const getProxy = (name: string) =>  {
@@ -28,16 +31,16 @@ export const json2pac = (json: Record<string, string[]>) => {
   for (const key in json) {
     switch(key) {
       case 'direct':
-        if (json[key]?.length) str += reg(json[key], 'DIRECT') + '\n'
+        if (json[key]?.length) str += reg(json[key], 'DIRECT')
         break
       case 'system':
-        if (json[key]?.length) str += reg(json[key], 'SYSTEM') + '\n'
+        if (json[key]?.length) str += reg(json[key], 'SYSTEM')
         break
       default:
         if (json[key]?.length) {
           const proxy = getProxy(key)
           if (proxy) {
-            str += reg(json[key], proxy) + '\n'
+            str += reg(json[key], proxy)
           } else {
             console.warn('not find custom proxy config for', key)
           }
@@ -46,7 +49,9 @@ export const json2pac = (json: Record<string, string[]>) => {
   }
 
   // https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Proxy_servers_and_tunneling/Proxy_Auto-Configuration_PAC_file
-  const pacStr = `function FindProxyForURL(url, host) {${str} return "DIRECT";}`
+  const pacStr = `function FindProxyForURL(url, host) {${str}
+  return "DIRECT";
+}`
   console.log(pacStr)
   return pacStr
 }
