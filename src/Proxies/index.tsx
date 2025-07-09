@@ -1,7 +1,7 @@
 // https://developer.chrome.com/docs/extensions/reference/api/proxy
 
 import { useEffect, useState } from 'react'
-import { Dropdown, Switch } from 'antd'
+import { Dropdown, message, Switch } from 'antd'
 import { DeleteOutlined, EditOutlined, MoreOutlined, PlusOutlined } from '@ant-design/icons'
 import { parse } from 'jsonc-parser'
 import { json2pac } from './utils'
@@ -81,6 +81,8 @@ export default function Proxies() {
       }, () => {
         localStorage.setItem('mode', value.name.toLowerCase())
         setCurrMode(value.name.toLowerCase())
+        message.destroy()
+        message.success(`启用固定代理 ${value.name}`)
       })
       return
     }
@@ -97,6 +99,8 @@ export default function Proxies() {
       }, () => {
         setCurrMode(value.name.toLowerCase())
         localStorage.setItem('mode', value.name.toLowerCase())
+        message.destroy()
+        message.success(`启用自动切换模式 ${value.name}`)
       })
       return
     }
@@ -107,6 +111,13 @@ export default function Proxies() {
     }, () => {
       localStorage.setItem('mode', value.name.toLowerCase())
       setCurrMode(value.name.toLowerCase())
+      if (value.name.toLowerCase() === 'direct') {
+        message.destroy()
+        message.success('启用直连')
+      } else {
+        message.destroy()
+        message.success('启用系统代理')
+      }
     })
   }
 
