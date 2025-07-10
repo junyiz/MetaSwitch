@@ -77,16 +77,15 @@ export default function Proxies() {
 
   function handleDelete(e: React.MouseEvent<HTMLAnchorElement>, mode: string) {
     e.stopPropagation()
+    if (currMode && currMode.toLowerCase() === mode.toLowerCase()) {
+      message.error('不能删除正在使用的代理模式')
+      return
+    }
     const newModes: Mode[] = modes.filter(
       (m) => m.name.toLowerCase() !== mode.toLowerCase()
     )
     setModes(newModes)
     localStorage.setItem('modes', JSON.stringify(newModes))
-  }
-
-  function handleRename(e: React.MouseEvent<HTMLAnchorElement>, mode: string) {
-    e.stopPropagation()
-    console.log(mode)
   }
 
   function handleProxyChange({
@@ -213,14 +212,6 @@ export default function Proxies() {
                 <Dropdown
                   menu={{
                     items: [
-                      {
-                        label: (
-                          <a onClick={(event) => handleRename(event, mode.name)}>
-                            <EditOutlined style={{ fontSize: "14px" }} /> rename
-                          </a>
-                        ),
-                        key: "0",
-                      },
                       {
                         label: (
                           <a onClick={(event) => handleDelete(event, mode.name)}>

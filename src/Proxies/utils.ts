@@ -42,7 +42,7 @@ export const json2pac = (json: Record<string, string[]>) => {
           if (proxy) {
             str += reg(json[key], proxy)
           } else {
-            console.warn('not find custom proxy config for', key)
+            console.log('Not find custom proxy config for', key)
           }
         }
     }
