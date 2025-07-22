@@ -1,15 +1,13 @@
 import { useEffect, useState } from 'react'
 import { debounce } from 'lodash'
-import { Mode } from '../types'
 import './styles.less'
 
 const require = (window as any).require
 require.config({ paths: { 'vs': 'lib/monaco-editor/vs' }})
 
-export default function MonacoEditor({ value, editMode, onChange }: {
+export default function MonacoEditor({ value, onChange }: {
   value: string
-  editMode: Mode
-  onChange: (mode: Mode) => void
+  onChange: (json: string) => void
 }) {
   const [rect, setRect] = useState<{ width: string, height: string }>( {
     width: localStorage.getItem('width') || '100%',
@@ -38,13 +36,8 @@ export default function MonacoEditor({ value, editMode, onChange }: {
 
       // 监测编辑器内容变化
       editor.onDidChangeModelContent(debounce(() => {
-        console.log('onDidChangeModelContent', editMode.name, editMode.enabled)
         const json = editor.getValue()
-        if (!json) return
-        localStorage.setItem(`${editMode.name.toLowerCase()}:json`, json)
-        if (editMode.enabled) {
-          onChange(editMode)
-        }
+        if (json) onChange(json)
       }, 300))
 
       const ro = new ResizeObserver(entries => {

@@ -1,10 +1,11 @@
 .mode {
   display: flex;
   flex-wrap: wrap;
+  margin-bottom: 20px;
 
   &-item {
     cursor: pointer;
-    width: 150px;
+    width: 120px;
     border-radius: 5px;
     margin-right: 20px;
     margin-bottom: 10px;
@@ -55,10 +56,10 @@
       border-style: dashed;
     }
   }
-}
 
-.edit-mode {
-  font-size: 18px;
-  text-transform: uppercase;
-  margin-bottom: 10px;
+  &-item.enabled {
+    .mode-item-name {
+      color: #1890ff;
+    }
+  }
 }

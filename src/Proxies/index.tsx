@@ -27,6 +27,7 @@ const initialModes: Mode[] = [
     desc: '固定代理',
     rules: DEFAULT_FIXED_SERVER_RULES,
     enabled: false,
+    isEditing: true, // 默认编辑状态
   },
   {
     name: 'fixedProxy',
@@ -34,8 +35,9 @@ const initialModes: Mode[] = [
     desc: '固定代理',
     rules: DEFAULT_FIXED_SERVER_RULES,
     enabled: false,
+    isEditing: false, 
   },
-  { name: 'autoSwitch', type: 3, desc: 'PAC 脚本', enabled: false },
+  { name: 'autoSwitch', type: 3, desc: 'PAC 脚本', enabled: false, isEditing: false },
 ]
 
 export default function Proxies() {
@@ -46,25 +48,18 @@ export default function Proxies() {
     return initialModes
   })
   const [modalOpen, setModalOpen] = useState(false)
-  const [editMode, setEditMode] = useState<Mode>()
-
-  useEffect(() => {
-    if (modes.length > 0) {
-      const storedEditMode = localStorage.getItem('editMode')
-      if (storedEditMode) {
-        setEditMode(
-          modes.find((m) => m.name.toLowerCase() === storedEditMode)
-        )
-      } else {
-        setEditMode(modes[2])
-      }
-    }
-  }, [modes])
 
   function handleEditMode(m: Mode) {
-    console.log('handleEditMode', m)
-    setEditMode(m)
-    localStorage.setItem('editMode', m.name.toLowerCase())
+    setModes((prevModes) => {
+      const nextModes = prevModes.map((mode) => {
+        if (mode.name.toLowerCase() === m.name.toLowerCase()) {
+          return { ...mode, isEditing: true }
+        }
+        return { ...mode, isEditing: false }
+      })
+      localStorage.setItem('modes', JSON.stringify(nextModes))
+      return nextModes
+    })
   }
 
   function handleDelete(mode: Mode) {
@@ -72,24 +67,12 @@ export default function Proxies() {
       message.error('不能删除正在使用的代理模式')
       return
     }
+    // TODO fixedProxy 被 autoSwitch 依赖，不能删除
     const newModes: Mode[] = modes.filter(
       (m) => m.name.toLowerCase() !== mode.name.toLowerCase()
     )
     setModes(newModes)
     localStorage.setItem('modes', JSON.stringify(newModes))
-  }
-
-  function updateModes(mode: Mode, modes: Mode[]) {
-    const nextModes = modes.map((m) =>
-      m.name.toLowerCase() === mode.name.toLowerCase()
-        ? mode.type === 2
-          ? { ...m, rules: mode.rules, enabled: true }
-          : { ...m, enabled: true }
-        : { ...m, enabled: false }
-    )
-    localStorage.setItem("modes", JSON.stringify(nextModes))
-    setModes(nextModes)
-    return nextModes
   }
 
   // 固定的代理服务器
@@ -108,10 +91,7 @@ export default function Proxies() {
 
   // PAC 脚本自动切换代理服务器
   function updatePacScript(value: Mode, isSwitch: boolean, modes: Mode[]) {
-    const json =
-      localStorage.getItem(`${value.name.toLowerCase()}:json`) ||
-      localStorage.getItem('json') ||
-      DEFAULT_RULE
+    const json = value.json || DEFAULT_RULE
     chrome.runtime.sendMessage(
       {
         mode: 'pac_script',
@@ -140,7 +120,13 @@ export default function Proxies() {
   }) {
     if (!value) return
 
-    const nextModes = updateModes(value, modes)
+    const nextModes = modes.map((m) =>
+      m.name.toLowerCase() === value.name.toLowerCase()
+        ? { ...m, enabled: true }
+        : { ...m, enabled: false }
+    )
+    localStorage.setItem("modes", JSON.stringify(nextModes))
+    setModes(nextModes)
 
     if (value.type === 2) {
       updateFixedProxy(value)
@@ -169,23 +155,23 @@ export default function Proxies() {
     )
   }
 
-  function handleModeChange(mode: Mode) {
-    let flag = false
+  function handleModeChange(editMode: Mode) {
+    const nextModes = modes.map((m) =>
+      m.name.toLowerCase() === editMode.name.toLowerCase()
+        ? { ...editMode }
+        : { ...m }
+    )
+    localStorage.setItem("modes", JSON.stringify(nextModes))
+    setModes(nextModes)
+    if (editMode.enabled) {
+      updateFixedProxy(editMode)
+      return
+    }
     for (const m of modes) {
       if (m.enabled && m.type === 3) {
-        const nextModes = updateModes(mode, modes) 
-        console.log('updatePacScript', m, nextModes)
         updatePacScript(m, false, nextModes)
-        flag = true
         break
       }
-    }
-
-    if (mode.enabled) {
-      updateModes(mode, modes)
-      updateFixedProxy(mode)
-    } else if (!flag) {
-      updateModes(mode, modes)
     }
   }
 
@@ -199,17 +185,15 @@ export default function Proxies() {
         rules: DEFAULT_FIXED_SERVER_RULES,
         enabled: false,
       }
-      let flag = false
+      const nextModes = [...modes, mode]
+      localStorage.setItem('modes', JSON.stringify(nextModes))
+      setModes(nextModes)
       for (const m of modes) {
         if (m.enabled && m.type === 3) {
-          const nextModes = updateModes(mode, [...modes, mode]) 
+          // PAC 脚本可能依赖此新增 fixedProxy，故更新
           updatePacScript(m, false, nextModes)
-          flag = true
           break
         }
-      }
-      if (!flag) {
-        updateModes(mode, [...modes, mode])
       }
       handleEditMode(mode)
     }
@@ -224,8 +208,44 @@ export default function Proxies() {
         },
         enabled: false,
       }
-      updateModes(mode, [...modes, mode])
+      const nextModes = [...modes, mode]
+      localStorage.setItem('modes', JSON.stringify(nextModes))
+      setModes(nextModes)
       handleEditMode(mode)
+    }
+  }
+
+  function handleMonacoChange(editMode: Mode) {
+    const nextModes = modes.map((m) =>
+      m.name.toLowerCase() === editMode.name.toLowerCase()
+        ? { ...editMode }
+        : { ...m }
+    )
+    localStorage.setItem('modes', JSON.stringify(nextModes))
+    setModes(nextModes)
+    if (editMode.enabled) {
+      updatePacScript(editMode, false, modes)
+    }
+  }
+
+  function renderEditor() {
+    const editMode = modes.find((m) => m.isEditing)
+    if (!editMode) return null
+    if (editMode.type === 2) {
+      return (
+        <ModeEditor
+          editMode={editMode}
+          onChange={debounce(handleModeChange, 300)}
+        />
+      )
+    }
+    if (editMode.type === 3) {
+      return (
+        <MonacoEditor
+          value={editMode.json || DEFAULT_RULE}
+          onChange={debounce((json) => handleMonacoChange({ ...editMode, json }), 300)}
+        />
+      )
     }
   }
   
@@ -233,7 +253,7 @@ export default function Proxies() {
     <>
       <div className="mode">
         {modes.map((mode) => (
-          <div className="mode-item">
+          <div className={`mode-item${mode.enabled ? " enabled" : ""}`} key={mode.name}>
             <div className="mode-item-name">{mode.name}</div>
             <div className="mode-item-desc">{mode.desc}</div>
             <div className="mode-item-btns">
@@ -246,11 +266,7 @@ export default function Proxies() {
               {mode.type > 1 && (
                 <>
                   <EditOutlined
-                    style={
-                      mode.name.toLowerCase() === editMode?.name.toLowerCase()
-                        ? { color: "#1890ff" }
-                        : {}
-                    }
+                    style={ mode.isEditing ? { color: "#1890ff" } : {} }
                     onClick={() => handleEditMode(mode)}
                   />
                   <DeleteOutlined
@@ -269,26 +285,7 @@ export default function Proxies() {
           <PlusOutlined />
         </div>
       </div>
-      <div className="edit-mode">
-        <EditOutlined style={{ fontSize: "14px", marginRight: 10 }} />
-        {editMode?.name}
-      </div>
-      {editMode?.type === 2 && (
-        <ModeEditor
-          editMode={editMode}
-          onChange={debounce(handleModeChange, 300)}
-        />
-      )}
-      {editMode?.type === 3 && (
-        <MonacoEditor
-          value={
-            localStorage.getItem(`${editMode.name.toLowerCase()}:json`) ||
-            DEFAULT_RULE
-          }
-          editMode={editMode}
-          onChange={debounce((mode) => updatePacScript(mode, false, modes), 300)}
-        />
-      )}
+      {renderEditor()}
       <AddModeModal
         modalOpen={modalOpen}
         modes={modes}
