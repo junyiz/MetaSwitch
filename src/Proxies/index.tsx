@@ -1,11 +1,11 @@
 // https://developer.chrome.com/docs/extensions/reference/api/proxy
 
 import { useEffect, useState } from 'react'
-import { Dropdown, message, Switch } from 'antd'
+import { message } from 'antd'
 import {
+  CheckOutlined,
   DeleteOutlined,
   EditOutlined,
-  MoreOutlined,
   PlusOutlined,
 } from '@ant-design/icons'
 import { parse } from 'jsonc-parser'
@@ -15,29 +15,30 @@ import MonacoEditor from './MonacoEditor'
 import AddModeModal from './AddModeModal'
 import ModeEditor from './ModeEditor'
 import { DEFAULT_RULE, DEFAULT_FIXED_SERVER_RULES } from './consts'
-import { Mode } from './types'
+import { Mode, AddModeFormValues, ModeType } from './types'
 import './styles.less'
 
 const initialModes: Mode[] = [
-  { name: 'direct', type: 0, desc: '直接连接' },
-  { name: 'system', type: 1, desc: '系统代理' },
+  { name: 'direct', type: 0, desc: '直接连接', enabled: true },
+  { name: 'system', type: 1, desc: '系统代理', enabled: false },
   {
     name: 'whistle',
     type: 2,
     desc: '固定代理',
     rules: DEFAULT_FIXED_SERVER_RULES,
+    enabled: false,
   },
   {
     name: 'fixedProxy',
     type: 2,
     desc: '固定代理',
     rules: DEFAULT_FIXED_SERVER_RULES,
+    enabled: false,
   },
-  { name: 'autoSwitch', type: 3, desc: 'PAC 脚本' },
+  { name: 'autoSwitch', type: 3, desc: 'PAC 脚本', enabled: false },
 ]
 
 export default function Proxies() {
-  const [currMode, setCurrMode] = useState<string>()
   const [modes, setModes] = useState<Mode[]>(() => {
     if (localStorage.getItem('modes')) {
       return JSON.parse(localStorage.getItem('modes') || '[]')
@@ -48,21 +49,11 @@ export default function Proxies() {
   const [editMode, setEditMode] = useState<Mode>()
 
   useEffect(() => {
-    if (localStorage.getItem('mode')) {
-      setCurrMode(localStorage.getItem('mode') || '')
-    } else {
-      // 获取当前代理模式
-      chrome.proxy.settings.get({ incognito: false }, function (config) {
-        console.log(config)
-        setCurrMode(config.value.mode)
-      })
-    }
     if (modes.length > 0) {
-      if (localStorage.getItem('editMode')) {
+      const storedEditMode = localStorage.getItem('editMode')
+      if (storedEditMode) {
         setEditMode(
-          modes.find(
-            (m) => m.name.toLowerCase() === localStorage.getItem('editMode')
-          )
+          modes.find((m) => m.name.toLowerCase() === storedEditMode)
         )
       } else {
         setEditMode(modes[2])
@@ -71,21 +62,76 @@ export default function Proxies() {
   }, [modes])
 
   function handleEditMode(m: Mode) {
+    console.log('handleEditMode', m)
     setEditMode(m)
     localStorage.setItem('editMode', m.name.toLowerCase())
   }
 
-  function handleDelete(e: React.MouseEvent<HTMLAnchorElement>, mode: string) {
-    e.stopPropagation()
-    if (currMode && currMode.toLowerCase() === mode.toLowerCase()) {
+  function handleDelete(mode: Mode) {
+    if (mode.enabled) {
       message.error('不能删除正在使用的代理模式')
       return
     }
     const newModes: Mode[] = modes.filter(
-      (m) => m.name.toLowerCase() !== mode.toLowerCase()
+      (m) => m.name.toLowerCase() !== mode.name.toLowerCase()
     )
     setModes(newModes)
     localStorage.setItem('modes', JSON.stringify(newModes))
+  }
+
+  function updateModes(mode: Mode) {
+    const nextModes = modes.map((m) =>
+      m.name.toLowerCase() === mode.name.toLowerCase()
+        ? mode.type === 2
+          ? { ...m, rules: mode.rules, enabled: true }
+          : { ...m, enabled: true }
+        : mode.type === 2
+          ? { ...m, rules: mode.rules, enabled: false }
+          : { ...m, enabled: false }
+    )
+    localStorage.setItem("modes", JSON.stringify(nextModes))
+    setModes(nextModes)
+  }
+
+  // 固定的代理服务器
+  function updateFixedProxy(value: Mode) {
+    chrome.runtime.sendMessage(
+      {
+        mode: 'fixed_servers',
+        rules: value.rules,
+      },
+      () => {
+        updateModes(value)
+        message.destroy()
+        message.success(`启用固定代理 ${value.name}`)
+      }
+    )
+  }
+
+  // PAC 脚本自动切换代理服务器
+  function updatePacScript(value: Mode, isSwitch: boolean) {
+    const json =
+      localStorage.getItem(`${value.name.toLowerCase()}:json`) ||
+      localStorage.getItem('json') ||
+      DEFAULT_RULE
+    chrome.runtime.sendMessage(
+      {
+        mode: 'pac_script',
+        pacScript: {
+          data: json2pac(parse(json)),
+          mandatory: true,
+        },
+      },
+      () => {
+        updateModes(value)
+        message.destroy()
+        if (isSwitch) {
+          message.success(`启用自动切换模式 ${value.name}`)
+        } else {
+          message.success(`自动切换模式 ${value.name} 的规则已更新`)
+        }
+      }
+    )
   }
 
   function handleProxyChange({
@@ -98,47 +144,12 @@ export default function Proxies() {
     if (!value) return
 
     if (value.type === 2) {
-      // 使用固定的代理服务器
-      chrome.runtime.sendMessage(
-        {
-          mode: 'fixed_servers',
-          rules: value.rules,
-        },
-        () => {
-          localStorage.setItem('mode', value.name.toLowerCase())
-          setCurrMode(value.name.toLowerCase())
-          message.destroy()
-          message.success(`启用固定代理 ${value.name}`)
-        }
-      )
+      updateFixedProxy(value)
       return
     }
 
     if (value.type === 3) {
-      // 使用 PAC 脚本自动切换代理服务器
-      const json =
-        localStorage.getItem(`${value.name.toLowerCase()}:json`) ||
-        localStorage.getItem('json') ||
-        DEFAULT_RULE
-      chrome.runtime.sendMessage(
-        {
-          mode: 'pac_script',
-          pacScript: {
-            data: json2pac(parse(json)),
-            mandatory: true,
-          },
-        },
-        () => {
-          setCurrMode(value.name.toLowerCase())
-          localStorage.setItem('mode', value.name.toLowerCase())
-          message.destroy()
-          if (isSwitch) {
-            message.success(`启用自动切换模式 ${value.name}`)
-          } else {
-            message.success(`自动切换模式 ${value.name} 的规则已更新`)
-          }
-        }
-      )
+      updatePacScript(value, isSwitch || false)
       return
     }
 
@@ -148,8 +159,7 @@ export default function Proxies() {
         mode: value.name.toLowerCase(),
       },
       () => {
-        localStorage.setItem('mode', value.name.toLowerCase())
-        setCurrMode(value.name.toLowerCase())
+        updateModes(value)
         if (value.name.toLowerCase() === 'direct') {
           message.destroy()
           message.success('启用直连')
@@ -161,72 +171,90 @@ export default function Proxies() {
     )
   }
 
-  function handleModeChange(newModes: Mode[]) {
-    setModes(newModes)
-    if (currMode) {
-      if (
-        editMode?.name.toLowerCase() === currMode.toLowerCase() ||
-        newModes.find((it) => it.name.toLowerCase() === currMode.toLowerCase())
-          ?.type === 3
-      ) {
-        localStorage.setItem('modes', JSON.stringify(newModes))
-        handleProxyChange({
-          value: newModes.find(
-            (m: Mode) => m.name.toLowerCase() === currMode?.toLowerCase()
-          ),
-          isSwitch: false,
-        })
+  function handleModeChange(mode: Mode) {
+    if (mode.enabled) {
+      updateFixedProxy(mode)
+      return
+    }
+
+    for (const m of modes) {
+      if (m.enabled && m.type === 3) {
+        updateModes(m) 
+        updatePacScript(m, false)
+        break
       }
     }
   }
 
+  function handleAddMode(values: AddModeFormValues) {
+    const name = values.name.trim().toLowerCase()
+    if (values.type === '2') {
+      const mode = {
+        name,
+        desc: '固定代理',
+        type: Number(values.type) as ModeType,
+        rules: DEFAULT_FIXED_SERVER_RULES,
+        enabled: false,
+      }
+      let flag = false
+      for (const m of modes) {
+        if (m.enabled && m.type === 3) {
+          updateModes(m) 
+          updatePacScript(m, false)
+          flag = true
+          break
+        }
+      }
+      if (!flag) {
+        updateModes(mode)
+      }
+      handleEditMode(mode)
+    }
+    if (values.type === '3') {
+      const mode = {
+        name,
+        desc: 'PAC 脚本',
+        type: Number(values.type) as ModeType,
+        pacScript: {
+          data: json2pac(parse(DEFAULT_RULE)),
+          mandatory: true
+        },
+        enabled: false,
+      }
+      updateModes(mode)
+      handleEditMode(mode)
+    }
+  }
+  
   return (
     <>
       <div className="mode">
         {modes.map((mode) => (
-          <div
-            onClick={() => handleEditMode(mode)}
-            className={`mode-item${
-              mode.name.toLowerCase() === currMode?.toLowerCase()
-                ? ' mode-item-active'
-                : ''
-            }${
-              editMode?.name.toLowerCase() === mode.name.toLowerCase()
-                ? ' mode-item-edit'
-                : ''
-            }`}
-          >
-            <div className="mode-item-name">
-              <span>{mode.name}</span>
-              <Switch
-                size="small"
-                checked={mode.name.toLowerCase() === currMode?.toLowerCase()}
-                onChange={() =>
+          <div className="mode-item">
+            <div className="mode-item-name">{mode.name}</div>
+            <div className="mode-item-desc">{mode.desc}</div>
+            <div className="mode-item-btns">
+              <CheckOutlined
+                style={mode.enabled ? { color: "#1890ff" } : {}}
+                onClick={() =>
                   handleProxyChange({ value: mode, isSwitch: true })
                 }
               />
-            </div>
-            <div className="mode-item-desc">
-              <span>{mode.desc}</span>
               {mode.type > 1 && (
-                <Dropdown
-                  menu={{
-                    items: [
-                      {
-                        label: (
-                          <a onClick={(event) => handleDelete(event, mode.name)}>
-                            <DeleteOutlined style={{ fontSize: "14px" }} />{" "}
-                            remove
-                          </a>
-                        ),
-                        key: "1",
-                      },
-                    ],
-                  }}
-                  trigger={["click"]}
-                >
-                  <MoreOutlined style={{ fontSize: "14px" }} />
-                </Dropdown>
+                <>
+                  <EditOutlined
+                    style={
+                      mode.name.toLowerCase() === editMode?.name.toLowerCase()
+                        ? { color: "#1890ff" }
+                        : {}
+                    }
+                    onClick={() => handleEditMode(mode)}
+                  />
+                  <DeleteOutlined
+                    onClick={() => handleDelete(mode)}
+                    style={{ fontSize: "14px" }}
+                  />
+                </>
               )}
             </div>
           </div>
@@ -244,7 +272,6 @@ export default function Proxies() {
       </div>
       {editMode?.type === 2 && (
         <ModeEditor
-          modes={modes}
           editMode={editMode}
           onChange={debounce(handleModeChange, 300)}
         />
@@ -255,17 +282,16 @@ export default function Proxies() {
             localStorage.getItem(`${editMode.name.toLowerCase()}:json`) ||
             DEFAULT_RULE
           }
-          modes={modes}
           editMode={editMode}
-          onChange={debounce(handleModeChange, 300)}
+          onChange={debounce((mode) => updatePacScript(mode, false), 300)}
         />
       )}
       <AddModeModal
         modalOpen={modalOpen}
         modes={modes}
         setModalOpen={setModalOpen}
-        onChange={handleModeChange}
+        onChange={debounce(handleAddMode, 300)}
       />
     </>
-  )
+  );
 }

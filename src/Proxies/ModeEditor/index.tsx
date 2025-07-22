@@ -3,10 +3,9 @@ import { Form, Input, InputNumber, Select, Space } from 'antd'
 import { Mode, ModeRules } from '../types'
 import './styles.less'
 
-export default function ModeEditor({ modes, editMode, onChange }: {
-  modes: Mode[]
+export default function ModeEditor({ editMode, onChange }: {
   editMode: Mode
-  onChange: (modes: Mode[]) => void
+  onChange: (mode: Mode) => void
 }) {
   const [form] = Form.useForm()
 
@@ -26,17 +25,14 @@ export default function ModeEditor({ modes, editMode, onChange }: {
   }, [editMode, form, initialValues])
   
   function onValuesChange(_changedValues: unknown, allValues: ModeRules) {
-    const newModes = modes.map((mode) => {
-      if (mode.name.toLowerCase() === editMode?.name.toLowerCase()) {
-        const { fallbackProxy, bypassList } = allValues
-        mode.rules = {
-          fallbackProxy,
-          bypassList: bypassList?.toString().split('\n')
-        }
-      }
-      return mode
+    const { fallbackProxy, bypassList } = allValues
+    onChange({
+      ...editMode,
+      rules: {
+        fallbackProxy,
+        bypassList: bypassList?.toString().split('\n')
+      },
     })
-    onChange(newModes)
   }
 
   return (

@@ -26,26 +26,26 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-
-      span {
-        margin-right: 5px;
-      }
     }
-
 
     &-desc {
       color: #999;
       padding: 0 8px;
       font-size: 14px;
-      margin-top: 25px;
+      margin-top: 5px;
       margin-bottom: 5px;
       display: flex;
       align-items: center;
       justify-content: space-between;
     }
 
-    &-active {
-      color: #1677ff;
+    &-btns {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 5px;
+      margin-bottom: 5px;
+      padding: 2px 8px 0;
     }
 
     &-new {
@@ -53,35 +53,6 @@
       justify-content: center;
       align-items: center;
       border-style: dashed;
-    }
-
-    &-action {
-      border-top: 0.5px solid #efefef;
-      display: flex;
-      opacity: 0;
-
-      > div {
-        flex: 1;
-        text-align: center;
-        padding-block: 4px 2px;
-
-        &:first-child {
-          border-right: 0.5px solid #efefef;
-        }
-      }
-    }
-
-    &-edit {
-      border-color: #1677ff;
-    }
-
-    &-edit &-edit-icon,
-    &:hover &-edit-icon {
-      display: block;
-    }
-
-    &:hover &-action {
-      opacity: 1;
     }
   }
 }

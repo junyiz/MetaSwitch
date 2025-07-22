@@ -1,47 +1,21 @@
 import { Form, Input, Modal, Radio, Space, message } from 'antd'
-import { parse } from 'jsonc-parser'
-import { json2pac } from '../utils'
-import { Mode, ModeType } from '../types'
-import { DEFAULT_FIXED_SERVER_RULES, DEFAULT_RULE } from '../consts'
+import { Mode, AddModeFormValues } from '../types'
 
 export default function AddModeModal({ modes, modalOpen, setModalOpen, onChange }: {
   modes: Mode[]
   modalOpen: boolean
   setModalOpen: (modalOpen: boolean) => void
-  onChange: (modes: Mode[]) => void
+  onChange: (values: AddModeFormValues) => void
 }) {
   const [form] = Form.useForm()
 
-  function handleSubmit(values: { name: string; type: string; }) {
-    console.log('Received values of form: ', values)
+  function handleSubmit(values: AddModeFormValues) {
     const name = values.name.trim().toLowerCase()
     if (modes.find((m) => m.name.toLowerCase() === name)) {
       message.error(`named ${name} already exists`)
       return
     }
-    if (values.type === '2') {
-      const newModes: Mode[] = [...modes, {
-        name,
-        desc: '固定代理',
-        type: Number(values.type) as ModeType,
-        rules: DEFAULT_FIXED_SERVER_RULES
-      }]
-      localStorage.setItem('editMode', name)
-      onChange(newModes)
-    }
-    if (values.type === '3') {
-      const newModes: Mode[] = [...modes, {
-        name,
-        desc: 'PAC 脚本',
-        type: Number(values.type) as ModeType,
-        pacScript: {
-          data: json2pac(parse(DEFAULT_RULE)),
-          mandatory: true
-        }
-      }]
-      localStorage.setItem('editMode', name)
-      onChange(newModes)
-    }
+    onChange(values)
     setModalOpen(false)
     form.resetFields()
   }

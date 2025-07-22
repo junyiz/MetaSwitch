@@ -9,6 +9,7 @@ export interface Mode {
     mandatory: boolean
   }
   rules?: ModeRules
+  enabled: boolean // 是否启用
 }
 
 export interface ModeRules {
@@ -18,4 +19,10 @@ export interface ModeRules {
     port: number
   },
   bypassList?: string[]
+}
+
+
+export interface AddModeFormValues {
+  name: string;
+  type: string;
 }

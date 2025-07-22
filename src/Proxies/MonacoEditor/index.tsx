@@ -6,11 +6,10 @@ import './styles.less'
 const require = (window as any).require
 require.config({ paths: { 'vs': 'lib/monaco-editor/vs' }})
 
-export default function MonacoEditor({ value, modes, editMode, onChange }: {
+export default function MonacoEditor({ value, editMode, onChange }: {
   value: string
-  modes: Mode[]
   editMode: Mode
-  onChange: (modes: Mode[]) => void
+  onChange: (mode: Mode) => void
 }) {
   const [rect, setRect] = useState<{ width: string, height: string }>( {
     width: localStorage.getItem('width') || '100%',
@@ -39,10 +38,13 @@ export default function MonacoEditor({ value, modes, editMode, onChange }: {
 
       // 监测编辑器内容变化
       editor.onDidChangeModelContent(debounce(() => {
+        console.log('onDidChangeModelContent', editMode.name, editMode.enabled)
         const json = editor.getValue()
         if (!json) return
         localStorage.setItem(`${editMode.name.toLowerCase()}:json`, json)
-        onChange(modes)
+        if (editMode.enabled) {
+          onChange(editMode)
+        }
       }, 300))
 
       const ro = new ResizeObserver(entries => {
