@@ -13,9 +13,7 @@ if(${condition}){
   }`
 }
 
-const getProxy = (name: string) =>  {
-  const modes: Mode[] = JSON.parse(localStorage.getItem('modes') || '[]')
-
+const getProxy = (name: string, modes: Mode[]) =>  {
   for (const m of modes) {
     // name 不区分大小写
     if (m.name.toLowerCase() === name.toLowerCase() && m.rules) {
@@ -25,7 +23,7 @@ const getProxy = (name: string) =>  {
   }
 }
 
-export const json2pac = (json: Record<string, string[]>) => {
+export const json2pac = (json: Record<string, string[]>, modes: Mode[]) => {
   let str = ''
 
   for (const key in json) {
@@ -38,7 +36,7 @@ export const json2pac = (json: Record<string, string[]>) => {
         break
       default:
         if (json[key]?.length) {
-          const proxy = getProxy(key)
+          const proxy = getProxy(key, modes)
           if (proxy) {
             str += reg(json[key], proxy)
           } else {

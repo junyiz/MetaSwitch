@@ -79,18 +79,17 @@ export default function Proxies() {
     localStorage.setItem('modes', JSON.stringify(newModes))
   }
 
-  function updateModes(mode: Mode) {
+  function updateModes(mode: Mode, modes: Mode[]) {
     const nextModes = modes.map((m) =>
       m.name.toLowerCase() === mode.name.toLowerCase()
         ? mode.type === 2
           ? { ...m, rules: mode.rules, enabled: true }
           : { ...m, enabled: true }
-        : mode.type === 2
-          ? { ...m, rules: mode.rules, enabled: false }
-          : { ...m, enabled: false }
+        : { ...m, enabled: false }
     )
     localStorage.setItem("modes", JSON.stringify(nextModes))
     setModes(nextModes)
+    return nextModes
   }
 
   // 固定的代理服务器
@@ -101,7 +100,6 @@ export default function Proxies() {
         rules: value.rules,
       },
       () => {
-        updateModes(value)
         message.destroy()
         message.success(`启用固定代理 ${value.name}`)
       }
@@ -109,7 +107,7 @@ export default function Proxies() {
   }
 
   // PAC 脚本自动切换代理服务器
-  function updatePacScript(value: Mode, isSwitch: boolean) {
+  function updatePacScript(value: Mode, isSwitch: boolean, modes: Mode[]) {
     const json =
       localStorage.getItem(`${value.name.toLowerCase()}:json`) ||
       localStorage.getItem('json') ||
@@ -118,12 +116,11 @@ export default function Proxies() {
       {
         mode: 'pac_script',
         pacScript: {
-          data: json2pac(parse(json)),
+          data: json2pac(parse(json), modes),
           mandatory: true,
         },
       },
       () => {
-        updateModes(value)
         message.destroy()
         if (isSwitch) {
           message.success(`启用自动切换模式 ${value.name}`)
@@ -143,13 +140,15 @@ export default function Proxies() {
   }) {
     if (!value) return
 
+    const nextModes = updateModes(value, modes)
+
     if (value.type === 2) {
       updateFixedProxy(value)
       return
     }
 
     if (value.type === 3) {
-      updatePacScript(value, isSwitch || false)
+      updatePacScript(value, isSwitch || false, nextModes)
       return
     }
 
@@ -159,7 +158,6 @@ export default function Proxies() {
         mode: value.name.toLowerCase(),
       },
       () => {
-        updateModes(value)
         if (value.name.toLowerCase() === 'direct') {
           message.destroy()
           message.success('启用直连')
@@ -172,17 +170,22 @@ export default function Proxies() {
   }
 
   function handleModeChange(mode: Mode) {
-    if (mode.enabled) {
-      updateFixedProxy(mode)
-      return
-    }
-
+    let flag = false
     for (const m of modes) {
       if (m.enabled && m.type === 3) {
-        updateModes(m) 
-        updatePacScript(m, false)
+        const nextModes = updateModes(mode, modes) 
+        console.log('updatePacScript', m, nextModes)
+        updatePacScript(m, false, nextModes)
+        flag = true
         break
       }
+    }
+
+    if (mode.enabled) {
+      updateModes(mode, modes)
+      updateFixedProxy(mode)
+    } else if (!flag) {
+      updateModes(mode, modes)
     }
   }
 
@@ -199,14 +202,14 @@ export default function Proxies() {
       let flag = false
       for (const m of modes) {
         if (m.enabled && m.type === 3) {
-          updateModes(m) 
-          updatePacScript(m, false)
+          const nextModes = updateModes(mode, [...modes, mode]) 
+          updatePacScript(m, false, nextModes)
           flag = true
           break
         }
       }
       if (!flag) {
-        updateModes(mode)
+        updateModes(mode, [...modes, mode])
       }
       handleEditMode(mode)
     }
@@ -216,12 +219,12 @@ export default function Proxies() {
         desc: 'PAC 脚本',
         type: Number(values.type) as ModeType,
         pacScript: {
-          data: json2pac(parse(DEFAULT_RULE)),
+          data: json2pac(parse(DEFAULT_RULE), modes),
           mandatory: true
         },
         enabled: false,
       }
-      updateModes(mode)
+      updateModes(mode, [...modes, mode])
       handleEditMode(mode)
     }
   }
@@ -283,7 +286,7 @@ export default function Proxies() {
             DEFAULT_RULE
           }
           editMode={editMode}
-          onChange={debounce((mode) => updatePacScript(mode, false), 300)}
+          onChange={debounce((mode) => updatePacScript(mode, false, modes), 300)}
         />
       )}
       <AddModeModal
