@@ -205,9 +205,12 @@ export default function Proxies() {
       setModes(nextModes)
       for (const m of modes) {
         if (m.enabled && m.type === 3) {
-          // PAC 脚本可能依赖此新增 fixedProxy，故更新
-          updatePacScript(m, false, nextModes)
-          break
+          const json = parse(m.json || DEFAULT_RULE)
+          // PAC 脚本依赖
+          if (json[name]) {
+            updatePacScript(m, false, nextModes)
+            break
+          }
         }
       }
       handleEditMode(mode)
