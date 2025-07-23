@@ -1,7 +1,7 @@
 // https://developer.chrome.com/docs/extensions/reference/api/proxy
 
-import { useEffect, useState } from 'react'
-import { message } from 'antd'
+import { useState } from 'react'
+import { message, Modal } from 'antd'
 import {
   CheckOutlined,
   DeleteOutlined,
@@ -52,7 +52,7 @@ export default function Proxies() {
   function handleEditMode(m: Mode) {
     setModes((prevModes) => {
       const nextModes = prevModes.map((mode) => {
-        if (mode.name.toLowerCase() === m.name.toLowerCase()) {
+        if (mode.name === m.name) {
           return { ...mode, isEditing: true }
         }
         return { ...mode, isEditing: false }
@@ -67,9 +67,24 @@ export default function Proxies() {
       message.error('不能删除正在使用的代理模式')
       return
     }
-    // TODO fixedProxy 被 autoSwitch 依赖，不能删除
+    for (const m of modes) {
+      if (m.type === 3) {
+        const json = parse(m.json || DEFAULT_RULE)
+        if (json[mode.name]) {
+          Modal.confirm({
+            content: `自动切换模式 ${m.name} 依赖 ${mode.name}，是否删除？`,
+            onOk() {
+              const newModes: Mode[] = modes.filter((m) => m.name !== mode.name)
+              setModes(newModes)
+              localStorage.setItem('modes', JSON.stringify(newModes))
+            }
+          })
+          return
+        }
+      }
+    }
     const newModes: Mode[] = modes.filter(
-      (m) => m.name.toLowerCase() !== mode.name.toLowerCase()
+      (m) => m.name !== mode.name
     )
     setModes(newModes)
     localStorage.setItem('modes', JSON.stringify(newModes))
@@ -121,7 +136,7 @@ export default function Proxies() {
     if (!value) return
 
     const nextModes = modes.map((m) =>
-      m.name.toLowerCase() === value.name.toLowerCase()
+      m.name === value.name
         ? { ...m, enabled: true }
         : { ...m, enabled: false }
     )
@@ -141,10 +156,10 @@ export default function Proxies() {
     // 直连或系统代理
     chrome.runtime.sendMessage(
       {
-        mode: value.name.toLowerCase(),
+        mode: value.name,
       },
       () => {
-        if (value.name.toLowerCase() === 'direct') {
+        if (value.name === 'direct') {
           message.destroy()
           message.success('启用直连')
         } else {
@@ -157,7 +172,7 @@ export default function Proxies() {
 
   function handleModeChange(editMode: Mode) {
     const nextModes = modes.map((m) =>
-      m.name.toLowerCase() === editMode.name.toLowerCase()
+      m.name === editMode.name
         ? { ...editMode }
         : { ...m }
     )
@@ -176,7 +191,7 @@ export default function Proxies() {
   }
 
   function handleAddMode(values: AddModeFormValues) {
-    const name = values.name.trim().toLowerCase()
+    const name = values.name.trim()
     if (values.type === '2') {
       const mode = {
         name,
@@ -217,7 +232,7 @@ export default function Proxies() {
 
   function handleMonacoChange(editMode: Mode) {
     const nextModes = modes.map((m) =>
-      m.name.toLowerCase() === editMode.name.toLowerCase()
+      m.name === editMode.name
         ? { ...editMode }
         : { ...m }
     )
