@@ -311,5 +311,5 @@ export default function Proxies() {
         onChange={debounce(handleAddMode, 300)}
       />
     </>
-  );
+  )
 }
