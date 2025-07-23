@@ -1,4 +1,3 @@
-<div align="center">
 # Proxy MetaSwitch
 
 快捷地管理和切换多个代理设置
@@ -7,5 +6,3 @@
 
 ![Proxy MetaSwitch](public/images/m01.png)
 ![Proxy MetaSwitch](public/images/m02.png)
-
-</div>
