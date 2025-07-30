@@ -10,8 +10,8 @@ export default function AddModeModal({ modes, modalOpen, setModalOpen, onChange 
   const [form] = Form.useForm()
 
   function handleSubmit(values: AddModeFormValues) {
-    const name = values.name.trim().toLowerCase()
-    if (modes.find((m) => m.name.toLowerCase() === name)) {
+    const name = values.name.trim()
+    if (modes.find((m) => m.name === name)) {
       message.error(`named ${name} already exists`)
       return
     }

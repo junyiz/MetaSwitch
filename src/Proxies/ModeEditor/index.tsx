@@ -1,37 +1,31 @@
 import { useEffect, useCallback } from 'react'
 import { Form, Input, InputNumber, Select, Space } from 'antd'
-import { Mode, ModeRules } from '../types'
+import { ModeRules } from '../types'
 import './styles.less'
 
-export default function ModeEditor({ editMode, onChange }: {
-  editMode: Mode
-  onChange: (mode: Mode) => void
+export default function ModeEditor({ value, onChange }: {
+  value: ModeRules
+  onChange: (value: ModeRules) => void
 }) {
   const [form] = Form.useForm()
 
   const initialValues = useCallback(() => {
-    if (!editMode?.rules) return {}
-    const { fallbackProxy, bypassList } = editMode.rules
+    const { fallbackProxy, bypassList } = value
     return {
       fallbackProxy,
       bypassList: bypassList?.toString().replace(/,/g, '\n')
     }
-  }, [editMode])
+  }, [value])
 
   useEffect(() => {
-    if (editMode?.type === 2) {
-      form.setFieldsValue(initialValues())
-    }
-  }, [editMode, form, initialValues])
+    form.setFieldsValue(initialValues())
+  }, [value, form, initialValues])
   
   function onValuesChange(_changedValues: unknown, allValues: ModeRules) {
     const { fallbackProxy, bypassList } = allValues
     onChange({
-      ...editMode,
-      rules: {
-        fallbackProxy,
-        bypassList: bypassList?.toString().split('\n')
-      },
+      fallbackProxy,
+      bypassList: bypassList?.toString().split('\n')
     })
   }
 
