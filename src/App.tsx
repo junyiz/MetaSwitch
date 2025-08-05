@@ -17,7 +17,7 @@ export default function App() {
       return pre
     }, {})
     a.href = `data:,${JSON.stringify(json, null, 2)}`
-    a.download = `xuanniao-${dayjs().format('YYYY-MM-DD')}.json`
+    a.download = `MetaSwitch-${dayjs().format('YYYY-MM-DD')}.json`
     a.click()
   }
 
