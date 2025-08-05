@@ -171,6 +171,9 @@ export default function Proxies() {
           ? { ...m, enabled: true }
           : { ...m, enabled: false }
       )
+
+      localStorage.setItem("modes", JSON.stringify(nextModes))
+
       if (value.type === 2) {
         updateFixedProxy(value)
         return nextModes
@@ -182,9 +185,6 @@ export default function Proxies() {
       }
 
       updateDefaultProxy(value)
-
-      localStorage.setItem("modes", JSON.stringify(nextModes))
-
       return nextModes
     })
 
