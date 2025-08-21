@@ -39,7 +39,6 @@ export default function App() {
         reader.readAsText(file)
         reader.onload = (e) => {
           const modes = e.target?.result as string
-          console.log(modes)
           localStorage.setItem('modes', base64ToStr(modes))
           location.reload()
         }

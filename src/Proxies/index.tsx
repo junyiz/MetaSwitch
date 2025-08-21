@@ -45,7 +45,11 @@ function updateFixedProxy(value: Mode) {
   chrome.runtime.sendMessage(
     {
       mode: 'fixed_servers',
-      rules: value.rules,
+      rules: {
+        // fallbackProxy 配置比较复杂，目前的实现其实是 singleProxy, 故这里再次转换为 singleProxy
+        singleProxy: value.rules?.fallbackProxy,
+        bypassList: value.rules?.bypassList,
+      },
     },
     () => {
       message.destroy()
